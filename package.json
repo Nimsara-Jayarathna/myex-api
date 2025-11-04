@@ -1,6 +1,7 @@
 {
   "name": "myex-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "RESTful backend service for MyEx — handles user authentication, expense &amp; income management, and data analytics using Node.js, Express, and MongoDB.",
   "main": "index.js",
   "scripts": {
