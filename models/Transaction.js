@@ -10,6 +10,7 @@ const transactionSchema = new mongoose.Schema(
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     amount: { type: Number, required: true, min: 0 },
     date: { type: Date, default: Date.now },
+    isCustomDate: { type: Boolean, default: false },
     status: { type: String, enum: ["active", "undone"], default: "active" },
   },
   { timestamps: true }

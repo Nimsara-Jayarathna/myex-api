@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createTransaction,
+  createTransactionWithCustomDate,
   getTransactions,
   getSummary,
   updateTransaction,
@@ -13,6 +14,7 @@ const router = Router();
 router.use(protect);
 
 router.post("/", createTransaction);
+router.post("/custom", createTransactionWithCustomDate);
 router.get("/", getTransactions);
 router.get("/summary", getSummary);
 router.put("/:id", updateTransaction);
