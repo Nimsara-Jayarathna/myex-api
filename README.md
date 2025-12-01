@@ -68,5 +68,5 @@ All protected routes require `Authorization: Bearer <token>`.
 
 ## Deployment notes
 GitHub Actions workflow (`.github/workflows/deploy.yml`) deploys:
-- `dev` branch → staging droplet
-- `main` branch → production droplet
+- `dev` branch → staging 
+- `main` branch → production 
