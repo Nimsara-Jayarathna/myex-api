@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Copy project to droplet
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.STG_SSH_HOST }}
           username: ${{ secrets.STG_SSH_USER }}
@@ -50,8 +50,7 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          strip_components: 0
-          exclude: ".git/*"
+          exclude: ".git/*"   # <-- exclude .git folder
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -121,7 +120,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Copy project to droplet
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.DO_SSH_HOST }}
           username: ${{ secrets.DO_SSH_USER }}
@@ -130,8 +129,7 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          strip_components: 0
-          exclude: ".git/*"
+          exclude: ".git/*"   # <-- exclude .git folder
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -158,20 +156,6 @@ jobs:
               printf '%s\n' "$ENV_FILE" > .env
             fi
 
-            # Ensure Docker + Compose are available (Debian/Ubuntu)
-            if ! command -v docker >/dev/null 2>&1; then
-              sudo apt-get update
-              sudo apt-get install -y ca-certificates curl gnupg
-              sudo install -m 0755 -d /etc/apt/keyrings
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-              echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-                $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-              sudo apt-get update
-              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-            fi
-
-            # Compose CLI shim
             if docker compose version >/dev/null 2>&1; then
               DC="docker compose"
             elif command -v docker-compose >/dev/null 2>&1; then
@@ -181,9 +165,6 @@ jobs:
               exit 1
             fi
 
-            # Build and (re)start stack
             $DC -f docker-compose.yml down
             $DC -f docker-compose.yml up -d --build
-
-            # Clean up dangling images
             sudo docker image prune -f
