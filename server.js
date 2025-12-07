@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import morgan from "morgan";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
@@ -12,50 +11,22 @@ dotenv.config();
 
 const app = express();
 
+// Allow configuring CORS origins via comma-separated env var
 const corsOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim())
-  : undefined;
+  ? process.env.CLIENT_ORIGIN.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+  : [];
 
-app.use(
-  cors(
-    corsOrigins && corsOrigins.length > 0
-      ? { origin: corsOrigins, credentials: true }
-      : undefined
-  )
-);
+const corsOptions =
+  corsOrigins.length > 0
+    ? { origin: corsOrigins, credentials: true }
+    : undefined; // falls back to default CORS config when not provided
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("combined"));
-if (process.env.NODE_ENV !== "production") {
-  app.use((req, res, next) => {
-    const { authorization, cookie, ...restHeaders } = req.headers || {};
-    const sensitiveFields = [
-      "password",
-      "confirmPassword",
-      "token",
-      "secret",
-      "apiKey",
-      "accessToken",
-      "refreshToken",
-    ];
-    const hasBody = req.body && Object.keys(req.body).length > 0;
-    const sanitizedBody = hasBody
-      ? Object.fromEntries(
-          Object.entries(req.body).map(([key, value]) => [
-            key,
-            sensitiveFields.includes(key) ? "[REDACTED]" : value,
-          ])
-        )
-      : null;
-
-    console.log("Request:", req.method, req.originalUrl);
-    console.log("Headers:", restHeaders);
-    if (sanitizedBody) console.log("Body:", sanitizedBody);
-
-    next();
-  });
-}
 
 app.get("/", (req, res) => {
   res.send("MyEx API is running.");
