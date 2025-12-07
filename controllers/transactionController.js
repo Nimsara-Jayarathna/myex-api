@@ -118,11 +118,14 @@ const resolveCategory = async ({ userId, type, categoryName, categoryId }) => {
 
 const buildTransactionResponse = (transaction) => ({
   id: transaction._id,
+  _id: transaction._id,
   user: transaction.user,
   title: transaction.title,
   description: transaction.description,
+  note: transaction.description,
   type: transaction.type,
   category: transaction.category,
+  categoryName: transaction.category,
   categoryId: transaction.categoryId,
   amount: transaction.amount,
   date: transaction.date,
@@ -247,34 +250,87 @@ export const createTransactionWithCustomDate = asyncHandler(async (req, res) => 
 });
 
 export const getTransactions = asyncHandler(async (req, res) => {
-  const { status } = req.query;
+  const {
+    status,
+    startDate,
+    endDate,
+    type,
+    category,
+    sortBy = "date",
+    sortDir = "desc",
+  } = req.query || {};
+
+  const page = Number(req.query.page);
+  const pageSize = Number(req.query.pageSize);
+
   const filter = { user: req.user._id };
 
   if (status) {
+    if (!ALLOWED_STATUS.includes(status)) {
+      const error = new Error("status must be either active or undone");
+      error.status = 400;
+      throw error;
+    }
     filter.status = status;
   }
 
-  const transactions = await Transaction.find(filter)
-    .sort({ date: -1, createdAt: -1 })
-    .lean();
+  if (type) {
+    if (!ALLOWED_TYPES.includes(type)) {
+      const error = new Error("type must be either income or expense");
+      error.status = 400;
+      throw error;
+    }
+    filter.type = type;
+  }
 
-  res.json({
-    transactions: transactions.map((transaction) => ({
-      id: transaction._id,
-      user: transaction.user,
-      title: transaction.title,
-      description: transaction.description,
-      type: transaction.type,
-      category: transaction.category,
-      categoryId: transaction.categoryId,
-      amount: transaction.amount,
-      date: transaction.date,
-      status: transaction.status,
-      isCustomDate: transaction.isCustomDate,
-      createdAt: transaction.createdAt,
-      updatedAt: transaction.updatedAt,
-    })),
-  });
+  if (startDate || endDate) {
+    filter.date = {};
+    if (startDate) {
+      filter.date.$gte = normalizeToUtcMidnight(startDate);
+    }
+    if (endDate) {
+      const end = normalizeToUtcMidnight(endDate);
+      end.setUTCHours(23, 59, 59, 999);
+      filter.date.$lte = end;
+    }
+  }
+
+  if (category) {
+    filter.category = { $regex: category.trim(), $options: "i" };
+  }
+
+  const sortFieldMap = {
+    date: "date",
+    amount: "amount",
+    category: "category",
+  };
+
+  const normalizedSortField = sortFieldMap[sortBy] || "date";
+  const normalizedSortDir = sortDir === "asc" ? 1 : -1;
+  const sort = { [normalizedSortField]: normalizedSortDir, createdAt: -1 };
+
+  const usePagination = Number.isInteger(page) && page > 0 && Number.isInteger(pageSize) && pageSize > 0;
+  let total = 0;
+
+  if (usePagination) {
+    total = await Transaction.countDocuments(filter);
+  }
+
+  const query = Transaction.find(filter).sort(sort).lean();
+
+  if (usePagination) {
+    query.skip((page - 1) * pageSize).limit(pageSize);
+  }
+
+  const transactions = await query;
+
+  const mapped = transactions.map((transaction) => buildTransactionResponse(transaction));
+
+  if (usePagination) {
+    return res.json({ transactions: mapped, total, page, pageSize });
+  }
+
+  res.json({ transactions: mapped });
 });
 
 const summaryPipeline = (userId) => [
