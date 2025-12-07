@@ -50,7 +50,9 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          exclude: ".git/*"   # <-- exclude .git folder
+          rm: true
+          strip_components: 0
+          exclude: ".git/**,node_modules/**,.github/**,.env"
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -129,7 +131,9 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          exclude: ".git/*"   # <-- exclude .git folder
+          rm: true
+          strip_components: 0
+          exclude: ".git/**,node_modules/**,.github/**,.env"
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
