@@ -1,22 +1,16 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Category from "../models/Category.js";
 import { asyncHandler } from "../utils/errorHandler.js";
+import {
+  clearAuthCookies,
+  issueTokens,
+  setAuthCookies,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "../utils/authTokens.js";
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 10;
-const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
-
-const ensureJwtSecret = () => {
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not configured");
-  }
-};
-
-const generateToken = (userId) => {
-  ensureJwtSecret();
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: TOKEN_EXPIRES_IN });
-};
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -48,6 +42,27 @@ const ensureDefaultCategories = async (userId) => {
   );
 };
 
+const handleTokenError = (err, messageExpired, messageInvalid) => {
+  if (err.name === "TokenExpiredError") {
+    const error = new Error(messageExpired);
+    error.status = 419;
+    throw error;
+  }
+
+  const error = new Error(messageInvalid);
+  error.status = err.status || 401;
+  throw error;
+};
+
+const respondWithAuth = (res, user) => {
+  const tokens = issueTokens(user._id);
+  setAuthCookies(res, tokens);
+
+  return res.json({
+    user: sanitizeUser(user),
+  });
+};
+
 export const register = asyncHandler(async (req, res) => {
   const { name, fname, lname, email, password } = req.body || {};
 
@@ -75,10 +90,8 @@ export const register = asyncHandler(async (req, res) => {
 
   await ensureDefaultCategories(user._id);
 
-  res.status(201).json({
-    token: generateToken(user._id),
-    user: sanitizeUser(user),
-  });
+  res.status(201);
+  respondWithAuth(res, user);
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -106,12 +119,65 @@ export const login = asyncHandler(async (req, res) => {
 
   await ensureDefaultCategories(user._id);
 
-  res.json({
-    token: generateToken(user._id),
-    user: sanitizeUser(user),
-  });
+  respondWithAuth(res, user);
 });
 
 export const getProfile = asyncHandler(async (req, res) => {
   res.json({ user: sanitizeUser(req.user) });
+});
+
+export const getSession = asyncHandler(async (req, res) => {
+  const token = req.cookies?.accessToken;
+
+  if (!token) {
+    const error = new Error("Access token missing");
+    error.status = 401;
+    throw error;
+  }
+
+  try {
+    const decoded = verifyAccessToken(token);
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      const error = new Error("User not found for this token");
+      error.status = 401;
+      throw error;
+    }
+
+    res.json({ user: sanitizeUser(user) });
+  } catch (err) {
+    handleTokenError(err, "Access token expired", "Invalid access token");
+  }
+});
+
+export const refreshSession = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    const error = new Error("Refresh token missing");
+    error.status = 401;
+    throw error;
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      const error = new Error("User not found for this token");
+      error.status = 401;
+      throw error;
+    }
+
+    respondWithAuth(res, user);
+  } catch (err) {
+    clearAuthCookies(res);
+    handleTokenError(err, "Refresh token expired", "Invalid refresh token");
+  }
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  clearAuthCookies(res);
+  res.status(204).send();
 });

@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
@@ -18,13 +19,14 @@ const corsOrigins = process.env.CLIENT_ORIGIN
       .filter(Boolean)
   : [];
 
-const corsOptions =
-  corsOrigins.length > 0
-    ? { origin: corsOrigins, credentials: true }
-    : undefined; // falls back to default CORS config when not provided
+const corsOptions = {
+  origin: corsOrigins.length > 0 ? corsOrigins : true,
+  credentials: true, // enable cookie/auth headers
+};
 
 app.use(cors(corsOptions));
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

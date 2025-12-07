@@ -1,20 +1,18 @@
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { asyncHandler } from "../utils/errorHandler.js";
+import { verifyAccessToken } from "../utils/authTokens.js";
 
 export const protect = asyncHandler(async (req, _res, next) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies?.accessToken;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    const error = new Error("Authorization token missing");
+  if (!token) {
+    const error = new Error("Access token missing");
     error.status = 401;
     throw error;
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyAccessToken(token);
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
@@ -26,8 +24,8 @@ export const protect = asyncHandler(async (req, _res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    const error = new Error("Not authorized");
-    error.status = 401;
+    const error = new Error(err.name === "TokenExpiredError" ? "Access token expired" : "Not authorized");
+    error.status = err.name === "TokenExpiredError" ? 419 : 401;
     throw error;
   }
 });
