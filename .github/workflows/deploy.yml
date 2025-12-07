@@ -94,9 +94,9 @@ jobs:
 
             # Compose CLI shim
             if docker compose version >/dev/null 2>&1; then
-              DC="sudo docker compose"
+              DC="docker compose"
             elif command -v docker-compose >/dev/null 2>&1; then
-              DC="sudo docker-compose"
+              DC="docker-compose"
             else
               echo "Docker Compose not available" >&2
               exit 1
@@ -175,9 +175,9 @@ jobs:
 
             # Compose CLI shim
             if docker compose version >/dev/null 2>&1; then
-              DC="sudo docker compose"
+              DC="docker compose"
             elif command -v docker-compose >/dev/null 2>&1; then
-              DC="sudo docker-compose"
+              DC="docker-compose"
             else
               echo "Docker Compose not available" >&2
               exit 1
