@@ -52,7 +52,7 @@ jobs:
           overwrite: true
           rm: true
           strip_components: 0
-          exclude: ".git/*,node_modules/*,.github/*,.env"
+          # exclude removed because it’s not supported in v0.1.7
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -76,7 +76,6 @@ jobs:
             cd "$APP_DIR"
 
             if [ -n "${ENV_FILE:-}" ]; then
-              # Refresh .env on the droplet from the stored secret
               printf '%s\n' "$ENV_FILE" > .env
             fi
 
@@ -134,7 +133,7 @@ jobs:
           overwrite: true
           rm: true
           strip_components: 0
-          exclude: ".git/*,node_modules/*,.github/*,.env"
+          # exclude removed because it’s not supported in v0.1.7
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -158,7 +157,6 @@ jobs:
             cd "$APP_DIR"
 
             if [ -n "${ENV_FILE:-}" ]; then
-              # Refresh .env on the droplet from the stored secret
               printf '%s\n' "$ENV_FILE" > .env
             fi
 
