@@ -50,9 +50,8 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          # rm: true
           strip_components: 0
-          # exclude removed because it’s not supported in v0.1.7
+          exclude: ".git/*"
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
@@ -131,9 +130,8 @@ jobs:
           source: "."
           target: ${{ env.APP_DIR }}
           overwrite: true
-          # rm: true
           strip_components: 0
-          # exclude removed because it’s not supported in v0.1.7
+          exclude: ".git/*"
 
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.0
