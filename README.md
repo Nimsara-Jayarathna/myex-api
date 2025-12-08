@@ -67,6 +67,7 @@ Protected routes read access tokens from HttpOnly cookies (CORS credentials enab
 ### Categories
 - `GET /api/categories?type=income|expense&includeInactive=true` — list categories
 - `POST /api/categories` — body: `name`, `type`
+- `PATCH /api/categories/:id` — body: `isDefault=true` to set the default category for that type (also updates user defaults)
 - `DELETE /api/categories/:id` — soft-archive (defaults cannot be removed)
 
 ### Transactions
