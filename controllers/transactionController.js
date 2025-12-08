@@ -118,11 +118,14 @@ const resolveCategory = async ({ userId, type, categoryName, categoryId }) => {
 
 const buildTransactionResponse = (transaction) => ({
   id: transaction._id,
+  _id: transaction._id,
   user: transaction.user,
   title: transaction.title,
   description: transaction.description,
+  note: transaction.description,
   type: transaction.type,
   category: transaction.category,
+  categoryName: transaction.category,
   categoryId: transaction.categoryId,
   amount: transaction.amount,
   date: transaction.date,
@@ -132,59 +135,7 @@ const buildTransactionResponse = (transaction) => ({
   updatedAt: transaction.updatedAt,
 });
 
-export const createTransaction = asyncHandler(async (req, res) => {
-  const {
-    title,
-    type,
-    amount,
-    category,
-    categoryId,
-    description,
-    status,
-  } = req.body || {};
-
-  if (!type || !ALLOWED_TYPES.includes(type)) {
-    const error = new Error("type must be either income or expense");
-    error.status = 400;
-    throw error;
-  }
-
-  const numericAmount = Number(amount);
-  if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-    const error = new Error("amount must be a positive number");
-    error.status = 400;
-    throw error;
-  }
-
-  if (status && !ALLOWED_STATUS.includes(status)) {
-    const error = new Error("status must be either active or undone");
-    error.status = 400;
-    throw error;
-  }
-
-  const categoryDoc = await resolveCategoryForCreation({
-    req,
-    type,
-    category,
-    categoryId,
-  });
-
-  const transaction = await Transaction.create({
-    user: req.user._id,
-    title: title?.trim() || categoryDoc?.name || type,
-    description,
-    type,
-    category: categoryDoc.name,
-    categoryId: categoryDoc._id,
-    amount: numericAmount,
-    status: status || "active",
-    isCustomDate: false,
-  });
-
-  res.status(201).json({ transaction: buildTransactionResponse(transaction) });
-});
-
-export const createTransactionWithCustomDate = asyncHandler(async (req, res) => {
+const handleCreateTransaction = async ({ req, res, requireDate }) => {
   const {
     title,
     type,
@@ -209,7 +160,7 @@ export const createTransactionWithCustomDate = asyncHandler(async (req, res) => 
     throw error;
   }
 
-  if (!date) {
+  if (requireDate && !date) {
     const error = new Error("date is required for custom transactions");
     error.status = 400;
     throw error;
@@ -228,7 +179,7 @@ export const createTransactionWithCustomDate = asyncHandler(async (req, res) => 
     categoryId,
   });
 
-  const customDate = normalizeToUtcMidnight(date);
+  const customDate = date ? normalizeToUtcMidnight(date) : undefined;
 
   const transaction = await Transaction.create({
     user: req.user._id,
@@ -238,43 +189,104 @@ export const createTransactionWithCustomDate = asyncHandler(async (req, res) => 
     category: categoryDoc.name,
     categoryId: categoryDoc._id,
     amount: numericAmount,
-    date: customDate,
+    ...(customDate ? { date: customDate } : {}),
     status: status || "active",
-    isCustomDate: true,
+    isCustomDate: Boolean(customDate),
   });
 
   res.status(201).json({ transaction: buildTransactionResponse(transaction) });
+};
+
+export const createTransaction = asyncHandler(async (req, res) => {
+  await handleCreateTransaction({ req, res, requireDate: false });
+});
+
+export const createTransactionWithCustomDate = asyncHandler(async (req, res) => {
+  await handleCreateTransaction({ req, res, requireDate: true });
 });
 
 export const getTransactions = asyncHandler(async (req, res) => {
-  const { status } = req.query;
+  const {
+    status,
+    startDate,
+    endDate,
+    type,
+    category,
+    sortBy = "date",
+    sortDir = "desc",
+  } = req.query || {};
+
+  const page = Number(req.query.page);
+  const pageSize = Number(req.query.pageSize);
+
   const filter = { user: req.user._id };
 
   if (status) {
+    if (!ALLOWED_STATUS.includes(status)) {
+      const error = new Error("status must be either active or undone");
+      error.status = 400;
+      throw error;
+    }
     filter.status = status;
   }
 
-  const transactions = await Transaction.find(filter)
-    .sort({ date: -1, createdAt: -1 })
-    .lean();
+  if (type) {
+    if (!ALLOWED_TYPES.includes(type)) {
+      const error = new Error("type must be either income or expense");
+      error.status = 400;
+      throw error;
+    }
+    filter.type = type;
+  }
 
-  res.json({
-    transactions: transactions.map((transaction) => ({
-      id: transaction._id,
-      user: transaction.user,
-      title: transaction.title,
-      description: transaction.description,
-      type: transaction.type,
-      category: transaction.category,
-      categoryId: transaction.categoryId,
-      amount: transaction.amount,
-      date: transaction.date,
-      status: transaction.status,
-      isCustomDate: transaction.isCustomDate,
-      createdAt: transaction.createdAt,
-      updatedAt: transaction.updatedAt,
-    })),
-  });
+  if (startDate || endDate) {
+    filter.date = {};
+    if (startDate) {
+      filter.date.$gte = normalizeToUtcMidnight(startDate);
+    }
+    if (endDate) {
+      const end = normalizeToUtcMidnight(endDate);
+      end.setUTCHours(23, 59, 59, 999);
+      filter.date.$lte = end;
+    }
+  }
+
+  if (category) {
+    filter.category = { $regex: category.trim(), $options: "i" };
+  }
+
+  const sortFieldMap = {
+    date: "date",
+    amount: "amount",
+    category: "category",
+  };
+
+  const normalizedSortField = sortFieldMap[sortBy] || "date";
+  const normalizedSortDir = sortDir === "asc" ? 1 : -1;
+  const sort = { [normalizedSortField]: normalizedSortDir, createdAt: -1 };
+
+  const usePagination = Number.isInteger(page) && page > 0 && Number.isInteger(pageSize) && pageSize > 0;
+  let total = 0;
+
+  if (usePagination) {
+    total = await Transaction.countDocuments(filter);
+  }
+
+  const query = Transaction.find(filter).sort(sort).lean();
+
+  if (usePagination) {
+    query.skip((page - 1) * pageSize).limit(pageSize);
+  }
+
+  const transactions = await query;
+
+  const mapped = transactions.map((transaction) => buildTransactionResponse(transaction));
+
+  if (usePagination) {
+    return res.json({ transactions: mapped, total, page, pageSize });
+  }
+
+  res.json({ transactions: mapped });
 });
 
 const summaryPipeline = (userId) => [

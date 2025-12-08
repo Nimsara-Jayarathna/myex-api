@@ -67,11 +67,12 @@ Protected routes read access tokens from HttpOnly cookies (CORS credentials enab
 ### Categories
 - `GET /api/categories?type=income|expense&includeInactive=true` — list categories
 - `POST /api/categories` — body: `name`, `type`
+- `PATCH /api/categories/:id` — body: `isDefault=true` to set the default category for that type (also updates user defaults)
 - `DELETE /api/categories/:id` — soft-archive (defaults cannot be removed)
 
 ### Transactions
-- `POST /api/transactions` — body: `type`, `amount`, optional `category` or `categoryId`, `title`, `description`, `status`
-- `POST /api/transactions/custom` — same as above plus `date` (required)
+- `POST /api/transactions` — body: `type`, `amount`, optional `category` or `categoryId`, `title`, `description`, `status`, optional `date` (uses provided date and marks `isCustomDate=true`)
+- `POST /api/transactions/custom` — same as above with `date` required
 - `GET /api/transactions?status=active|undone` — list for user
 - `GET /api/transactions/summary` — income/expense totals + weekly/monthly/yearly breakdowns
 - `PUT /api/transactions/:id` — update fields (type/category/date/etc.)

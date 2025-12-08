@@ -115,6 +115,69 @@ export const createCategory = asyncHandler(async (req, res) => {
   res.status(201).json({ category: buildCategoryResponse(category) });
 });
 
+export const setDefaultCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { isDefault } = req.body || {};
+
+  if (isDefault !== true) {
+    const error = new Error("isDefault must be true to set the default category");
+    error.status = 400;
+    throw error;
+  }
+
+  const category = await Category.findOne({
+    _id: id,
+    user: req.user._id,
+  });
+
+  if (!category) {
+    const error = new Error("Category not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (!category.isActive) {
+    const error = new Error("Category is inactive");
+    error.status = 400;
+    throw error;
+  }
+
+  const currentDefaultName =
+    category.type === "income"
+      ? req.user.defaultIncomeCategories?.[0]
+      : req.user.defaultExpenseCategories?.[0];
+
+  const alreadyDefaultAndAligned = category.isDefault && currentDefaultName === category.name;
+
+  if (!alreadyDefaultAndAligned) {
+    await Category.updateMany(
+      { user: req.user._id, type: category.type, isDefault: true, _id: { $ne: id } },
+      { $set: { isDefault: false } }
+    );
+
+    if (!category.isDefault) {
+      category.isDefault = true;
+      await category.save();
+    }
+  }
+
+  if (category.type === "income") {
+    req.user.defaultIncomeCategories = [category.name];
+  } else {
+    req.user.defaultExpenseCategories = [category.name];
+  }
+  await req.user.save();
+
+  res.json({
+    category: buildCategoryResponse(category),
+    defaults: {
+      defaultIncomeCategories: req.user.defaultIncomeCategories,
+      defaultExpenseCategories: req.user.defaultExpenseCategories,
+    },
+    unchanged: alreadyDefaultAndAligned,
+  });
+});
+
 export const archiveCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
