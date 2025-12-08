@@ -11,12 +11,10 @@ const userSchema = new mongoose.Schema(
     defaultIncomeCategories: {
       type: [String],
       default: ["Sales"],
-      immutable: true,
     },
     defaultExpenseCategories: {
       type: [String],
       default: ["Stock"],
-      immutable: true,
     },
   },
   { timestamps: true }
