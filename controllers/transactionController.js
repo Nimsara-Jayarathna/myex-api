@@ -144,6 +144,7 @@ const handleCreateTransaction = async ({ req, res, requireDate }) => {
     categoryId,
     date,
     description,
+    note,
     status,
   } = req.body || {};
 
@@ -179,12 +180,13 @@ const handleCreateTransaction = async ({ req, res, requireDate }) => {
     categoryId,
   });
 
+  const finalDescription = description ?? note ?? undefined;
   const customDate = date ? normalizeToUtcMidnight(date) : undefined;
 
   const transaction = await Transaction.create({
     user: req.user._id,
     title: title?.trim() || categoryDoc?.name || type,
-    description,
+    description: finalDescription,
     type,
     category: categoryDoc.name,
     categoryId: categoryDoc._id,
@@ -442,8 +444,9 @@ export const updateTransaction = asyncHandler(async (req, res) => {
     transaction.title = updates.title?.trim() || transaction.category;
   }
 
-  if (updates.description !== undefined) {
-    transaction.description = updates.description;
+  if (updates.description !== undefined || updates.note !== undefined) {
+    const newDescription = updates.description ?? updates.note ?? "";
+    transaction.description = newDescription;
   }
 
   if (updates.type) {
