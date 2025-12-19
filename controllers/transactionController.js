@@ -21,9 +21,22 @@ const normalizeToUtcMidnight = (value) => {
 };
 
 const getTimezoneFromRequest = (req) => {
-  const headerTz = req.get("X-User-Timezone") || req.get("x-user-timezone");
+  // 1) User profile setting, if available
+  const userTz = req.user?.timezone;
+  if (typeof userTz === "string" && userTz.trim()) {
+    return userTz.trim();
+  }
+
+  // 2) Explicit timezone header(s)
+  const headerTz =
+    req.get("X-Timezone") ||
+    req.get("x-timezone") ||
+    req.get("X-User-Timezone") ||
+    req.get("x-user-timezone");
+
   const bodyTz = req.body?.timezone;
   const queryTz = req.query?.timezone;
+
   const timezone = headerTz || bodyTz || queryTz;
 
   if (!timezone || typeof timezone !== "string") {
@@ -532,6 +545,19 @@ export const updateTransaction = asyncHandler(async (req, res) => {
 export const deleteTransaction = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
+  const transaction = await Transaction.findById(id);
+  if (!transaction) {
+    const error = new Error("Transaction not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (String(transaction.user) !== String(req.user._id)) {
+    const error = new Error("You are not allowed to delete this transaction");
+    error.status = 403;
+    throw error;
+  }
+
   const timeZone = getTimezoneFromRequest(req);
   if (!timeZone) {
     const error = new Error("timezone is required");
@@ -545,23 +571,14 @@ export const deleteTransaction = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const transaction = await Transaction.findOne({
-    _id: id,
-    user: req.user._id,
-  });
-
-  if (!transaction) {
-    const error = new Error("Transaction not found");
-    error.status = 404;
-    throw error;
-  }
-
-  const createdDateKey = getLocalDateKey(transaction.createdAt, timeZone);
+  // Compare the business date (transaction.date) with "today" in the user's timezone.
+  // Only the calendar date (YYYY-MM-DD) is used for this comparison.
+  const transactionDateKey = getLocalDateKey(transaction.date, timeZone);
   const todayDateKey = getLocalDateKey(new Date(), timeZone);
 
-  if (createdDateKey !== todayDateKey) {
-    const error = new Error("Transaction can only be deleted on the day it was created.");
-    error.status = 400;
+  if (transactionDateKey !== todayDateKey) {
+    const error = new Error("Transaction date must be today in your timezone to be deleted.");
+    error.status = 409;
     throw error;
   }
 
