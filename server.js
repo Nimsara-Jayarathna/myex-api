@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("MyEx API is running.");
+  res.send("Blipzo API is running.");
 });
 
 app.get("/health", (req, res) => {

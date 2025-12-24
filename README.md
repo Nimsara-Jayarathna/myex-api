@@ -1,6 +1,6 @@
-# MyEx API
+# Blipzo API
 
-RESTful backend for MyEx that handles authentication, categories, transactions, and spending insights using Node.js, Express, MongoDB, and JWT.
+RESTful backend for blipzo that handles authentication, categories, transactions, and spending insights using Node.js, Express, MongoDB, and JWT.
 
 ## Features
 - JWT auth with register, login, and profile endpoints
@@ -22,8 +22,8 @@ npm ci
 2) Create `.env` in the project root:
 ```bash
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/myex
-MONGO_DB_NAME=myex
+MONGO_URI=mongodb://localhost:27017/blipzo
+MONGO_DB_NAME=blipzo
 JWT_SECRET=replace_me
 JWT_EXPIRES_IN=7d
 BCRYPT_ROUNDS=10

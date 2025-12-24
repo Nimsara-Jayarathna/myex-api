@@ -3,35 +3,35 @@ version: "3.9"
 services:
   api:
     build: .
-    container_name: myex-api
+    container_name: blipzo-api
     env_file: .env
     environment:
       - PORT=${PORT:-5000}
-      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/myex}
-      - MONGO_DB_NAME=${MONGO_DB_NAME:-myex}
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/blipzo}
+      - MONGO_DB_NAME=${MONGO_DB_NAME:-blipzo}
     ports:
       - "${PORT:-5000}:5000"
     depends_on:
       - mongodb
     networks:
-      - myex-api_default
+      - blipzo-api_default
       - npm_default   # <- Add this line
     restart: unless-stopped
 
   mongodb:
     image: mongo:7
-    container_name: myex-mongodb
+    container_name: blipzo-mongodb
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
     networks:
-      - myex-api_default   # Only internal API network
+      - blipzo-api_default   # Only internal API network
 
 volumes:
   mongo-data:
 
 networks:
-  myex-api_default:
+  blipzo-api_default:
     driver: bridge
   npm_default:
     external: true   # <- tells Compose to use existing npm_default network

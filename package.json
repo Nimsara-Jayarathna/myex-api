@@ -1,8 +1,8 @@
 {
-  "name": "myex-api",
+  "name": "blipzo-api",
   "version": "1.0.0",
   "type": "module",
-  "description": "RESTful backend service for MyEx; handles user authentication, expense & income management, and data analytics using Node.js, Express, and MongoDB.",
+  "description": "RESTful backend service for blipzo; handles user authentication, expense & income management, and data analytics using Node.js, Express, and MongoDB.",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
