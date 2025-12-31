@@ -7,6 +7,12 @@ import authRoutes from "./routes/authRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import { notFound, errorHandler } from "./utils/errorHandler.js";
+import {
+  getClientIp,
+  getDeviceInfo,
+  hashEmail,
+  logger,
+} from "./utils/logger.js";
 
 dotenv.config();
 
@@ -29,6 +35,37 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    const clientIp = getClientIp(req);
+    const userAgent = req.get("user-agent") || undefined;
+    const deviceInfo = getDeviceInfo(req);
+    const userEmailHash =
+      res.locals.userEmailHash || (req.user?.email ? hashEmail(req.user.email) : undefined);
+    const logLevel =
+      res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+
+    logger[logLevel]({
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientIp,
+      userEmailHash,
+      deviceType: deviceInfo.deviceType,
+      deviceModel: deviceInfo.deviceModel,
+      os: deviceInfo.os,
+      browser: deviceInfo.browser,
+      appVersion: deviceInfo.appVersion,
+      userAgent,
+      errorMessage: res.locals.errorMessage,
+    });
+  });
+  next();
+});
 
 app.get("/", (req, res) => {
   res.send("Blipzo API is running.");
