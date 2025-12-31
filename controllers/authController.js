@@ -9,6 +9,7 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
 } from "../utils/authTokens.js";
+import { getClientIp, getDeviceInfo, hashEmail, logger } from "../utils/logger.js";
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 10;
 
@@ -95,11 +96,35 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
+  const start = process.hrtime.bigint();
   const { email, password } = req.body || {};
+  const emailHash = hashEmail(email);
+  const clientIp = getClientIp(req);
+  const deviceInfo = getDeviceInfo(req);
+  const userAgent = req.get("user-agent") || undefined;
+  const requestPath = `${req.baseUrl || ""}${req.path}`;
+  res.locals.userEmailHash = emailHash;
 
   if (!email || !password) {
     const error = new Error("email and password are required");
     error.status = 400;
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    logger.warn({
+      method: req.method,
+      path: requestPath,
+      status: error.status,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientIp,
+      userEmailHash: emailHash,
+      deviceType: deviceInfo.deviceType,
+      deviceModel: deviceInfo.deviceModel,
+      os: deviceInfo.os,
+      browser: deviceInfo.browser,
+      appVersion: deviceInfo.appVersion,
+      userAgent,
+      errorMessage: error.message,
+      loginSuccess: false,
+    });
     throw error;
   }
 
@@ -107,6 +132,23 @@ export const login = asyncHandler(async (req, res) => {
   if (!user) {
     const error = new Error("Invalid credentials");
     error.status = 401;
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    logger.warn({
+      method: req.method,
+      path: requestPath,
+      status: error.status,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientIp,
+      userEmailHash: emailHash,
+      deviceType: deviceInfo.deviceType,
+      deviceModel: deviceInfo.deviceModel,
+      os: deviceInfo.os,
+      browser: deviceInfo.browser,
+      appVersion: deviceInfo.appVersion,
+      userAgent,
+      errorMessage: error.message,
+      loginSuccess: false,
+    });
     throw error;
   }
 
@@ -114,10 +156,44 @@ export const login = asyncHandler(async (req, res) => {
   if (!passwordMatches) {
     const error = new Error("Invalid credentials");
     error.status = 401;
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    logger.warn({
+      method: req.method,
+      path: requestPath,
+      status: error.status,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientIp,
+      userEmailHash: emailHash,
+      deviceType: deviceInfo.deviceType,
+      deviceModel: deviceInfo.deviceModel,
+      os: deviceInfo.os,
+      browser: deviceInfo.browser,
+      appVersion: deviceInfo.appVersion,
+      userAgent,
+      errorMessage: error.message,
+      loginSuccess: false,
+    });
     throw error;
   }
 
   await ensureDefaultCategories(user._id);
+
+  const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+  logger.info({
+    method: req.method,
+    path: requestPath,
+    status: 200,
+    durationMs: Number(durationMs.toFixed(1)),
+    clientIp,
+    userEmailHash: hashEmail(user.email),
+    deviceType: deviceInfo.deviceType,
+    deviceModel: deviceInfo.deviceModel,
+    os: deviceInfo.os,
+    browser: deviceInfo.browser,
+    appVersion: deviceInfo.appVersion,
+    userAgent,
+    loginSuccess: true,
+  });
 
   respondWithAuth(res, user);
 });

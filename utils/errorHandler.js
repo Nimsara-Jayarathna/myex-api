@@ -9,8 +9,9 @@ export const notFound = (req, res, next) => {
 
 export const errorHandler = (err, req, res, _next) => {
   const statusCode = err.status || err.statusCode || 500;
+  res.locals.errorMessage = err.message || "Something went wrong";
   const response = {
-    message: err.message || "Something went wrong",
+    message: res.locals.errorMessage,
   };
 
   if (err.errors) {

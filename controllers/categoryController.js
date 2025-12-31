@@ -110,10 +110,9 @@ export const createCategory = asyncHandler(async (req, res) => {
     }
 
     const activeCount = await Category.countDocuments({
-      user: req.user._id,
       type,
-      isDefault: false,
       isActive: true,
+      $or: [{ user: req.user._id }, { user: null }],
     });
 
     if (activeCount >= limit) {
@@ -130,10 +129,9 @@ export const createCategory = asyncHandler(async (req, res) => {
   }
 
   const activeCount = await Category.countDocuments({
-    user: req.user._id,
     type,
-    isDefault: false,
     isActive: true,
+    $or: [{ user: req.user._id }, { user: null }],
   });
 
   if (activeCount >= limit) {
