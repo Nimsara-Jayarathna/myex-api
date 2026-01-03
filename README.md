@@ -56,6 +56,10 @@ Protected routes read access tokens from HttpOnly cookies (CORS credentials enab
 - `GET /` — ping
 - `GET /health` — uptime/status
 
+## Release Notes
+Detailed release notes for each version can be found in the [docs/releases](docs/releases/) directory.
+- Latest Release: [v1.0.0](docs/releases/v1.0.0.md)
+
 ## Deployment notes
 GitHub Actions workflow (`.github/workflows/deploy.yml`) deploys:
 - `dev` branch → staging 
