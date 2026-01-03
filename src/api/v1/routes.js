@@ -3,12 +3,13 @@ import * as authController from "./auth.controller.js";
 import * as categoryController from "./category.controller.js";
 import * as transactionController from "./transaction.controller.js";
 import { protect } from "../../middleware/authMiddleware.js";
+import { authLimiter } from "../../middleware/rateLimiter.js";
 
 const router = Router();
 
 // Auth Routes
-router.post("/auth/register", authController.register);
-router.post("/auth/login", authController.login);
+router.post("/auth/register", authLimiter, authController.register);
+router.post("/auth/login", authLimiter, authController.login);
 router.get("/auth/session", authController.getSession);
 router.post("/auth/refresh", authController.refreshSession);
 router.post("/auth/logout", authController.logout);

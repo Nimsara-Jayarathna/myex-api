@@ -11,6 +11,10 @@ import {
   hashEmail,
   logger,
 } from "./src/utils/logger.js";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import hpp from "hpp";
+import { globalLimiter } from "./src/middleware/rateLimiter.js";
 
 dotenv.config();
 
@@ -28,11 +32,18 @@ const corsOptions = {
   credentials: true, // enable cookie/auth headers
 };
 
+app.use(helmet());
 app.use(cors(corsOptions));
+app.use(globalLimiter);
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  req.body = mongoSanitize.sanitize(req.body);
+  next();
+});
+app.use(hpp());
 
 app.use((req, res, next) => {
   const start = process.hrtime.bigint();
