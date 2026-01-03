@@ -1,47 +1,10 @@
-import bcrypt from "bcrypt";
-import User from "../../models/User.js";
-import Category from "../../models/Category.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import {
   clearAuthCookies,
-  issueTokens,
   setAuthCookies,
-  verifyAccessToken,
-  verifyRefreshToken,
 } from "../../utils/authTokens.js";
 import { getClientIp, getDeviceInfo, hashEmail, logger } from "../../utils/logger.js";
-
-const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 10;
-
-const sanitizeUser = (user) => ({
-  id: user._id,
-  name: user.name || `${user.fname} ${user.lname}`.trim(),
-  fname: user.fname,
-  lname: user.lname,
-  email: user.email,
-  createdAt: user.createdAt,
-  updatedAt: user.updatedAt,
-  categoryLimit: user.categoryLimit ?? 10,
-  defaultIncomeCategories: user.defaultIncomeCategories,
-  defaultExpenseCategories: user.defaultExpenseCategories,
-});
-
-const ensureDefaultCategories = async (userId) => {
-  const defaults = [
-    { name: "Sales", type: "income" },
-    { name: "Stock", type: "expense" },
-  ];
-
-  await Promise.all(
-    defaults.map((entry) =>
-      Category.findOneAndUpdate(
-        { user: userId, name: entry.name, type: entry.type },
-        { $setOnInsert: { isDefault: true }, $set: { isActive: true } },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      )
-    )
-  );
-};
+import * as authService from "./services/auth.service.js";
 
 const handleTokenError = (err, messageExpired, messageInvalid) => {
   if (err.name === "TokenExpiredError") {
@@ -55,49 +18,23 @@ const handleTokenError = (err, messageExpired, messageInvalid) => {
   throw error;
 };
 
-const respondWithAuth = (res, user) => {
-  const tokens = issueTokens(user._id);
+const respondWithAuth = (res, user, tokens) => {
   setAuthCookies(res, tokens);
-
   return res.json({
-    user: sanitizeUser(user),
+    user: authService.sanitizeUser(user),
   });
 };
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, fname, lname, email, password } = req.body || {};
-
-  if (!fname || !lname || !email || !password) {
-    const error = new Error("fname, lname, email, and password are required");
-    error.status = 400;
-    throw error;
-  }
-
-  const existing = await User.findOne({ email: email.toLowerCase().trim() });
-  if (existing) {
-    const error = new Error("Email is already registered");
-    error.status = 409;
-    throw error;
-  }
-
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({
-    name,
-    fname,
-    lname,
-    email,
-    password: hashedPassword,
-  });
-
-  await ensureDefaultCategories(user._id);
+  const { user, tokens } = await authService.registerUser(req.body);
 
   res.status(201);
-  respondWithAuth(res, user);
+  respondWithAuth(res, user, tokens);
 });
 
 export const login = asyncHandler(async (req, res) => {
   const start = process.hrtime.bigint();
-  const { email, password } = req.body || {};
+  const { email } = req.body || {};
   const emailHash = hashEmail(email);
   const clientIp = getClientIp(req);
   const deviceInfo = getDeviceInfo(req);
@@ -105,14 +42,33 @@ export const login = asyncHandler(async (req, res) => {
   const requestPath = `${req.baseUrl || ""}${req.path}`;
   res.locals.userEmailHash = emailHash;
 
-  if (!email || !password) {
-    const error = new Error("email and password are required");
-    error.status = 400;
+  try {
+    const { user, tokens } = await authService.loginUser(req.body);
+
+    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+    logger.info({
+      method: req.method,
+      path: requestPath,
+      status: 200,
+      durationMs: Number(durationMs.toFixed(1)),
+      clientIp,
+      userEmailHash: emailHash,
+      deviceType: deviceInfo.deviceType,
+      deviceModel: deviceInfo.deviceModel,
+      os: deviceInfo.os,
+      browser: deviceInfo.browser,
+      appVersion: deviceInfo.appVersion,
+      userAgent,
+      loginSuccess: true,
+    });
+
+    respondWithAuth(res, user, tokens);
+  } catch (error) {
     const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
     logger.warn({
       method: req.method,
       path: requestPath,
-      status: error.status,
+      status: error.status || 500,
       durationMs: Number(durationMs.toFixed(1)),
       clientIp,
       userEmailHash: emailHash,
@@ -127,126 +83,25 @@ export const login = asyncHandler(async (req, res) => {
     });
     throw error;
   }
-
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
-  if (!user) {
-    const error = new Error("Invalid credentials");
-    error.status = 401;
-    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
-    logger.warn({
-      method: req.method,
-      path: requestPath,
-      status: error.status,
-      durationMs: Number(durationMs.toFixed(1)),
-      clientIp,
-      userEmailHash: emailHash,
-      deviceType: deviceInfo.deviceType,
-      deviceModel: deviceInfo.deviceModel,
-      os: deviceInfo.os,
-      browser: deviceInfo.browser,
-      appVersion: deviceInfo.appVersion,
-      userAgent,
-      errorMessage: error.message,
-      loginSuccess: false,
-    });
-    throw error;
-  }
-
-  const passwordMatches = await bcrypt.compare(password, user.password);
-  if (!passwordMatches) {
-    const error = new Error("Invalid credentials");
-    error.status = 401;
-    const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
-    logger.warn({
-      method: req.method,
-      path: requestPath,
-      status: error.status,
-      durationMs: Number(durationMs.toFixed(1)),
-      clientIp,
-      userEmailHash: emailHash,
-      deviceType: deviceInfo.deviceType,
-      deviceModel: deviceInfo.deviceModel,
-      os: deviceInfo.os,
-      browser: deviceInfo.browser,
-      appVersion: deviceInfo.appVersion,
-      userAgent,
-      errorMessage: error.message,
-      loginSuccess: false,
-    });
-    throw error;
-  }
-
-  await ensureDefaultCategories(user._id);
-
-  const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
-  logger.info({
-    method: req.method,
-    path: requestPath,
-    status: 200,
-    durationMs: Number(durationMs.toFixed(1)),
-    clientIp,
-    userEmailHash: hashEmail(user.email),
-    deviceType: deviceInfo.deviceType,
-    deviceModel: deviceInfo.deviceModel,
-    os: deviceInfo.os,
-    browser: deviceInfo.browser,
-    appVersion: deviceInfo.appVersion,
-    userAgent,
-    loginSuccess: true,
-  });
-
-  respondWithAuth(res, user);
 });
 
 export const getProfile = asyncHandler(async (req, res) => {
-  res.json({ user: sanitizeUser(req.user) });
+  res.json({ user: authService.sanitizeUser(req.user) });
 });
 
 export const getSession = asyncHandler(async (req, res) => {
-  const token = req.cookies?.accessToken;
-
-  if (!token) {
-    const error = new Error("Access token missing");
-    error.status = 401;
-    throw error;
-  }
-
   try {
-    const decoded = verifyAccessToken(token);
-    const user = await User.findById(decoded.userId).select("-password");
-
-    if (!user) {
-      const error = new Error("User not found for this token");
-      error.status = 401;
-      throw error;
-    }
-
-    res.json({ user: sanitizeUser(user) });
+    const user = await authService.getUserSession(req.cookies?.accessToken);
+    res.json({ user: authService.sanitizeUser(user) });
   } catch (err) {
     handleTokenError(err, "Access token expired", "Invalid access token");
   }
 });
 
 export const refreshSession = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (!refreshToken) {
-    const error = new Error("Refresh token missing");
-    error.status = 401;
-    throw error;
-  }
-
   try {
-    const decoded = verifyRefreshToken(refreshToken);
-    const user = await User.findById(decoded.userId).select("-password");
-
-    if (!user) {
-      const error = new Error("User not found for this token");
-      error.status = 401;
-      throw error;
-    }
-
-    respondWithAuth(res, user);
+    const { user, tokens } = await authService.refreshUserSession(req.cookies?.refreshToken);
+    respondWithAuth(res, user, tokens);
   } catch (err) {
     clearAuthCookies(res);
     handleTokenError(err, "Refresh token expired", "Invalid refresh token");
