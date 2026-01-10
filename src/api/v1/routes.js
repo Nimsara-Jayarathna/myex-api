@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as authController from "./auth.controller.js";
 import * as categoryController from "./category.controller.js";
 import * as transactionController from "./transaction.controller.js";
-import * as currencyController from "./currency.controller.js";
+
 import { protect } from "../../middleware/authMiddleware.js";
 import { authLimiter } from "../../middleware/rateLimiter.js";
 
@@ -16,9 +16,6 @@ router.post("/auth/refresh", authController.refreshSession);
 router.post("/auth/logout", authController.logout);
 router.get("/auth/me", protect, authController.getProfile);
 
-// Currency Routes
-router.get("/currencies", protect, currencyController.listCurrencies);
-router.put("/users/currency", protect, currencyController.updateUserCurrency);
 
 // Category Routes
 const categoryRouter = Router();

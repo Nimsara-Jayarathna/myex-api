@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./src/config/db.js";
 import routes from "./src/api/v1/routes.js";
+import v1_1Routes from "./src/api/v1_1/routes.js";
 import { logger } from "./src/utils/logger.js";
 import { seedCurrencies } from "./src/utils/seedCurrencies.js";
 import { notFound, errorHandler } from "./src/utils/errorHandler.js";
@@ -86,6 +87,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/v1", routes);
+app.use("/api/v1.1", v1_1Routes);
 
 app.use(notFound);
 app.use(errorHandler);
