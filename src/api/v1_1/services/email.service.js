@@ -1,6 +1,6 @@
 
 import SibApiV3Sdk from 'sib-api-v3-sdk';
-import { otpEmail, resetPasswordEmail, changeEmailVerification, sendLoginNotification } from "../../../utils/emailTemplates.js";
+import { otpEmail, resetPasswordEmail, changeEmailVerification, sendLoginNotification, welcomeEmail } from "../../../utils/emailTemplates.js";
 
 // Initialize Brevo Client
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -47,4 +47,9 @@ export const sendChangeEmailVerification = async (email, otp) => {
 export const notifyLogin = async (email, name, ip, device) => {
     const html = sendLoginNotification(name, ip, device);
     return sendEmail(email, "New Login Detected - Blipzo", html);
+};
+
+export const sendWelcomeEmail = async (email, name) => {
+    const html = welcomeEmail(name);
+    return sendEmail(email, "Welcome to Blipzo!", html);
 };

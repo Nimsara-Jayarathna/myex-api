@@ -6,7 +6,7 @@ import Token from "../../../models/Token.js";
 import Category from "../../../models/Category.js";
 import Currency from "../../../models/Currency.js";
 import { issueTokens, verifyAccessToken, verifyRefreshToken } from "../../../utils/authTokens.js";
-import { sendOtpEmail, sendPasswordResetEmail, sendChangeEmailVerification } from "./email.service.js";
+import { sendOtpEmail, sendPasswordResetEmail, sendChangeEmailVerification, sendWelcomeEmail } from "./email.service.js";
 
 const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 10;
 const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
@@ -102,6 +102,9 @@ export const completeRegistration = async ({ registrationToken, name, fname, lna
 
     await ensureDefaultCategories(user._id);
     await Token.deleteOne({ _id: tokenRecord._id });
+
+    // Send Welcome Email (Fire and forget)
+    sendWelcomeEmail(user.email, user.name).catch(err => console.error("Failed to send welcome email:", err));
 
     const tokens = issueTokens(user._id);
     return { user, tokens };

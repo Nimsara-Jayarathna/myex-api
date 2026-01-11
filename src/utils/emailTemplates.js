@@ -84,3 +84,14 @@ export const sendLoginNotification = (name, ip, device) => baseTemplate(`
   <p>If this was you, you can safely ignore this email.</p>
   <p>If you suspect unauthorized activity, please change your password immediately.</p>
 `);
+
+export const welcomeEmail = (name) => baseTemplate(`
+  <h2>Welcome to Blipzo, ${name}!</h2>
+  <p>We're thrilled to have you on board.</p>
+  <p>Blipzo is designed to help you manage your finances with ease and style. We hope you enjoy using our platform.</p>
+  <p>If you have any questions or need assistance, feel free to reply to this email or contact our support team.</p>
+  <br>
+  <div style="text-align: center;">
+    <a href="${process.env.CLIENT_URL || 'https://blipzo.xyz'}" class="action-button">Go to Dashboard</a>
+  </div>
+`);
