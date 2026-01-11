@@ -53,7 +53,7 @@ export const changeEmailVerifyCurrent = asyncHandler(async (req, res) => {
 });
 
 export const requestNewEmail = asyncHandler(async (req, res) => {
-    const result = await authService.requestNewEmail(req.user._id, req.body.token, req.body.newEmail);
+    const result = await authService.requestNewEmail(req.user._id, req.body.changeToken, req.body.newEmail);
     res.status(200).json(result);
 });
 
