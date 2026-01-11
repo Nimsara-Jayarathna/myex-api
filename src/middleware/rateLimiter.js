@@ -29,3 +29,16 @@ export const authLimiter = rateLimit({
     // HOWEVER, for security against credential stuffing, we definitely want to count all attempts or at least failures.
     // Let's stick to standard strict limit. If user logs in 5 times in 15 mins, that's suspicious anyway.
 });
+
+// Rate limit specifically for endpoints that send emails (OTP, Forgot Password, etc.)
+// Prevents email spamming/bombing
+export const emailLimiter = rateLimit({
+    windowMs: (Number(process.env.EMAIL_LIMIT_WINDOW_MS) || 10 * 60 * 1000), // Default: 10 minutes
+    max: (Number(process.env.EMAIL_LIMIT_MAX) || 3), // Default: 3 requests per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        status: 429,
+        message: "Too many email requests, please try again later",
+    },
+});
