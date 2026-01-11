@@ -10,6 +10,11 @@ const respondWithAuth = (res, user, tokens) => {
     });
 };
 
+export const updateUserDetails = asyncHandler(async (req, res) => {
+    const result = await authService.updateUserDetails(req.user._id, req.body.fname, req.body.lname);
+    res.status(200).json(result);
+});
+
 // --- Registration Endpoints ---
 
 export const registerInit = asyncHandler(async (req, res) => {

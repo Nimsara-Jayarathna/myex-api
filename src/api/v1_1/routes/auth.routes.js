@@ -22,4 +22,7 @@ router.post("/email/change/verify-current", protect, authController.changeEmailV
 router.post("/email/change/request-new", protect, authController.requestNewEmail);
 router.post("/email/change/confirm", protect, authController.confirmNewEmail);
 
+// User Profile
+router.put("/me", protect, authController.updateUserDetails);
+
 export default router;

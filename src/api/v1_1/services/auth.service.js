@@ -273,3 +273,20 @@ export const sanitizeUser = (user) => ({
         symbol: user.currency.symbol
     } : null,
 });
+
+export const updateUserDetails = async (userId, fname, lname) => {
+    const user = await User.findById(userId);
+    if (!user) throw { status: 404, message: "User not found" };
+
+    if (fname) user.fname = fname.trim();
+    if (lname) user.lname = lname.trim();
+
+    // Update the main name field if it exists, or just rely on virtual fullName
+    // Since name is optional/display name, we might want to update it if it was automatically set
+    if (user.name && user.name === `${user.fname} ${user.lname}`) {
+        user.name = `${user.fname} ${user.lname}`.trim();
+    }
+
+    await user.save();
+    return { user: sanitizeUser(user) };
+};
