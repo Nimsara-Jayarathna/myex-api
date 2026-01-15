@@ -1,33 +1,44 @@
 import rateLimit from "express-rate-limit";
+import { sendError } from "../utils/responseHelper.js";
+import { ERROR_CODES, HTTP_STATUS } from "../utils/errorCodes.js";
+
+const createHandler = (message) => (req, res, _next, options) => {
+    try {
+        if (req.originalUrl && req.originalUrl.startsWith("/api/v1.1")) {
+            return sendError(res, {
+                code: ERROR_CODES.RATE_LIMIT_EXCEEDED,
+                message: message
+            }, HTTP_STATUS.TOO_MANY_REQUESTS);
+        }
+
+        res.status(options.statusCode || 429).json({
+            status: options.statusCode || 429,
+            message: message,
+        });
+    } catch (error) {
+        console.error("Rate Limit Handler Error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 
 // General rate limit for most routes (e.g., 100 requests per 15 minutes)
 export const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: (Number(process.env.GLOBAL_LIMIT_WINDOW_MS) || 1 * 60 * 1000), // Default: 1 minute
+    max: (Number(process.env.GLOBAL_LIMIT_MAX) || 100), // limit each IP to 100 requests per windowMs
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: {
-        status: 429,
-        message: "Too many requests from this IP, please try again later",
-    },
+    handler: createHandler("Too many requests from this IP, please try again later"),
 });
 
 // Strict rate limit for auth routes (e.g., 5 requests per 15 minutes)
 // Helps prevent brute-force attacks on login/register
 export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 requests per windowMs
+    windowMs: (Number(process.env.AUTH_LIMIT_WINDOW_MS) || 1 * 60 * 1000), // Default: 1 minute
+    max: (Number(process.env.AUTH_LIMIT_MAX) || 5), // limit each IP to 5 requests per windowMs
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-        status: 429,
-        message: "Too many login attempts, please try again later",
-    },
-    skipSuccessfulRequests: true, // Optional: only count failed attempts for login? 
-    // actually for brute force usually we count all attempts to prevent enumeration 
-    // but for user experience on successful login sometimes it's nice to skip.
-    // HOWEVER, for security against credential stuffing, we definitely want to count all attempts or at least failures.
-    // Let's stick to standard strict limit. If user logs in 5 times in 15 mins, that's suspicious anyway.
+    handler: createHandler("Too many login attempts, please try again later"),
+    skipSuccessfulRequests: true,
 });
 
 // Rate limit specifically for endpoints that send emails (OTP, Forgot Password, etc.)
@@ -37,8 +48,5 @@ export const emailLimiter = rateLimit({
     max: (Number(process.env.EMAIL_LIMIT_MAX) || 3), // Default: 3 requests per IP per window
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-        status: 429,
-        message: "Too many email requests, please try again later",
-    },
+    handler: createHandler("Too many email requests, please try again later"),
 });
