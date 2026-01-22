@@ -177,6 +177,11 @@ export const resetPassword = async (token, newPassword) => {
     await user.save();
 
     await Token.deleteOne({ _id: tokenRecord._id });
+
+    // Notify user of password reset
+    const name = user.name || `${user.fname} ${user.lname}`.trim();
+    sendPasswordChangeNotification(user.email, name).catch(err => console.error("Failed to send password reset notification:", err));
+
     return { message: "Password reset successfully" };
 };
 
