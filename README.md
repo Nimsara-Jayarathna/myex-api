@@ -1,11 +1,12 @@
 # Blipzo API
 
-RESTful backend for blipzo that handles authentication, categories, transactions, and spending insights using Node.js, Express, MongoDB, and JWT.
+REST API for Blipzo. Provides authentication, categories, transactions, currency preferences, and reporting via Node.js, Express, and MongoDB.
 
 ## Features
-- JWT auth with register, login, and profile endpoints
+- JWT auth with register, login, refresh, and profile endpoints
 - Income/expense categories with limits, defaults, and soft-archive
 - Transactions with custom dates, status, and summaries (weekly/monthly/yearly)
+- Currency selection (v1.1) and standardized error responses
 - Health check and basic error handling middleware
 
 ## Prerequisites
@@ -46,22 +47,33 @@ Prod cross-site (different subdomains): use `COOKIE_SAMESITE=none`, `COOKIE_SECU
 - Dev (nodemon): `npm run dev`
 - Prod mode: `npm start`
 
+## Documentation
+
+Brief overview of what is available:
+
+API docs:
+- `docs/api/api-overview.md` - concise summary across versions
+- `docs/api/v1.1.0.md` - current API, full request/response details
+- `docs/api/v1.0.0.md` - legacy API, full request/response details
+
+Release notes:
+- `docs/releases/v1.1.0.md` - latest release notes
+- `docs/releases/v1.0.0.md` - previous release notes
+
 ## API overview
 
-Detailed documentation for API v1 endpoints can be found in [src/api/v1/README.md](src/api/v1/README.md).
-
-Protected routes read access tokens from HttpOnly cookies (CORS credentials enabled).
+Protected routes read access tokens from HTTP-only cookies (CORS credentials enabled).
 
 ### Misc
-- `GET /` — ping
-- `GET /health` — uptime/status
+- `GET /` - ping
+- `GET /health` - uptime/status
 
 ## Release Notes
-Detailed release notes for each version can be found in the [docs/releases](docs/releases/) directory.
-- Latest Release: [v1.0.0](docs/releases/v1.0.0.md)
+Detailed release notes for each version can be found in `docs/releases/`.
+- Latest Release: [v1.1.0](docs/releases/v1.1.0.md)
+- Previous Releases: [v1.0.0](docs/releases/v1.0.0.md)
 
 ## Deployment notes
 GitHub Actions workflow (`.github/workflows/deploy.yml`) deploys:
-- `dev` branch → staging 
-- `main` branch → production 
-
+- `dev` branch -> staging
+- `main` branch -> production
