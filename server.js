@@ -7,6 +7,7 @@ import routes from "./src/api/v1/routes.js";
 import v1_1Routes from "./src/api/v1_1/routes.js";
 import { logger } from "./src/utils/logger.js";
 import { seedCurrencies } from "./src/utils/seedCurrencies.js";
+import { seedAdminUser } from "./src/utils/seedAdminUser.js";
 import { notFound, errorHandler } from "./src/utils/errorHandler.js";
 import { startTokenCleanup } from "./src/services/cron.service.js";
 import {
@@ -100,6 +101,7 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
+    await seedAdminUser();
     await seedCurrencies();
     startTokenCleanup();
 

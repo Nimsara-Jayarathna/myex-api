@@ -41,6 +41,10 @@ BCRYPT_ROUNDS=10
 # Auth tokens/cookies
 ACCESS_TOKEN_EXPIRES_IN=15m
 REFRESH_TOKEN_EXPIRES_IN=7d
+ADMIN_OTP_EXPIRES_IN=5m
+ADMIN_OTP_MAX_ATTEMPTS=3
+ADMIN_OTP_RESEND_COOLDOWN_SECONDS=45
+ADMIN_OTP_LOCK_MINUTES=15
 COOKIE_SAMESITE=lax   # or none for cross-site HTTPS
 COOKIE_SECURE=true    # set false only for local HTTP
 COOKIE_DOMAIN=localhost # set to your API domain in prod (e.g., api.example.com)
@@ -59,6 +63,10 @@ CLIENT_ORIGIN=http://localhost:5173
 | BCRYPT_ROUNDS | Yes | 10 | Password hashing cost |
 | ACCESS_TOKEN_EXPIRES_IN | Yes | 15m | Cookie auth access token TTL |
 | REFRESH_TOKEN_EXPIRES_IN | Yes | 7d | Refresh token TTL |
+| ADMIN_OTP_EXPIRES_IN | No | 5m | Admin OTP challenge lifetime |
+| ADMIN_OTP_MAX_ATTEMPTS | No | 3 | Max incorrect admin OTP attempts before lock |
+| ADMIN_OTP_RESEND_COOLDOWN_SECONDS | No | 45 | Minimum delay between admin OTP resend requests |
+| ADMIN_OTP_LOCK_MINUTES | No | 15 | Lockout duration after max OTP failures |
 | COOKIE_SAMESITE | Yes | lax | Use `none` for cross-site HTTPS |
 | COOKIE_SECURE | Yes | true | Use `false` for local HTTP |
 | COOKIE_DOMAIN | Yes | localhost | Match API host |
@@ -112,6 +120,22 @@ Detailed release notes for each version can be found in `docs/releases/`.
 GitHub Actions workflow (`.github/workflows/deploy.yml`) deploys:
 - `dev` branch -> staging
 - `main` branch -> production
+
+### GitLab CI Variables For Admin Seed User
+
+Admin bootstrap uses env values only (no hardcoded credentials in code).
+
+Set these protected/masked CI variables:
+
+- `STG_ADMIN_SEED_EMAIL`
+- `STG_ADMIN_SEED_PASSWORD`
+- `PROD_ADMIN_SEED_EMAIL`
+- `PROD_ADMIN_SEED_PASSWORD`
+
+These are injected into deployed `.env` as:
+
+- `ADMIN_SEED_EMAIL`
+- `ADMIN_SEED_PASSWORD`
 
 ## Project structure
 - `src/` - application source

@@ -1,5 +1,6 @@
 import { sendError } from "./responseHelper.js";
 import { ERROR_CODES, HTTP_STATUS } from "./errorCodes.js";
+import { sendAdminError } from "../api/v1_1/admin/utils/adminResponse.js";
 
 export const asyncHandler = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
@@ -63,6 +64,17 @@ export const errorHandler = (err, req, res, _next) => {
 
   // Log error in production (or always if needed)
   res.locals.errorMessage = message;
+
+  if (req.originalUrl.startsWith("/api/v1.1/admin")) {
+    const adminErrors =
+      details && typeof details === "object"
+        ? Object.fromEntries(
+          Object.entries(details).filter(([, value]) => value !== undefined)
+        )
+        : undefined;
+
+    return sendAdminError(req, res, message, statusCode, adminErrors);
+  }
 
   // Only use standard error format for v1.1 API
   if (req.originalUrl.startsWith("/api/v1.1")) {

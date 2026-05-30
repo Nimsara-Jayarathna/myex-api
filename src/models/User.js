@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     lname: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
-    categoryLimit: { type: Number, default: 10, immutable: true },
+    categoryLimit: { type: Number, default: 10 },
     defaultIncomeCategories: {
       type: [String],
       default: ["Sales"],
@@ -18,6 +18,24 @@ const userSchema = new mongoose.Schema(
       default: ["Stock"],
     },
     currency: { type: mongoose.Schema.Types.ObjectId, ref: "Currency" },
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE", "SUSPENDED"],
+      default: "ACTIVE",
+      index: true,
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
     passwordResetToken: String,
     passwordResetExpires: Date,
   },

@@ -7,6 +7,8 @@ import {
   sendLoginNotification,
   welcomeEmail,
   passwordChanged,
+  adminGeneratedPassword,
+  adminOtpVerification,
 } from "../../../utils/emailTemplates.js";
 import { hashEmail, logger } from "../../../utils/logger.js";
 
@@ -100,4 +102,19 @@ export const sendPasswordChangeNotification = async (email, name) => {
   const resetLink = `${process.env.CLIENT_URL || "https://blipzo.xyz"}/forgot-password`;
   const html = passwordChanged(name, resetLink);
   return sendEmail(email, "Security Alert: Password Changed", html, "password_changed");
+};
+
+export const sendAdminPasswordResetNotification = async (email, name, temporaryPassword) => {
+  const html = adminGeneratedPassword(name, temporaryPassword);
+  return sendEmail(
+    email,
+    "Temporary Password Issued - Blipzo",
+    html,
+    "admin_password_reset"
+  );
+};
+
+export const sendAdminOtpEmail = async (email, otp) => {
+  const html = adminOtpVerification(otp);
+  return sendEmail(email, "Your Admin Verification Code - Blipzo", html, "admin_otp");
 };
