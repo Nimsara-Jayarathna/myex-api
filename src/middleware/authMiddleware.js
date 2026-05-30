@@ -21,6 +21,18 @@ export const protect = asyncHandler(async (req, _res, next) => {
       throw error;
     }
 
+    if ((decoded.tokenVersion || 0) !== (user.tokenVersion || 0)) {
+      const error = new Error("Session expired");
+      error.status = 401;
+      throw error;
+    }
+
+    if (user.status && user.status !== "ACTIVE") {
+      const error = new Error("Account is not active");
+      error.status = 403;
+      throw error;
+    }
+
     req.user = user;
     next();
   } catch (err) {

@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import User from "../../../models/User.js";
 import Token from "../../../models/Token.js";
-import Category from "../../../models/Category.js";
 import Currency from "../../../models/Currency.js";
+import { ensureUserDefaultCategories, getCategoryRegistrationDefaults } from "../../../services/categoryDefaults.js";
 import { issueTokens } from "../../../utils/authTokens.js";
 import { sendOtpEmail, sendPasswordResetEmail, sendChangeEmailVerification, sendWelcomeEmail, sendPasswordChangeNotification } from "./email.service.js";
 
@@ -13,23 +13,6 @@ const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 const generateOtp = () => crypto.randomInt(100000, 999999).toString();
 const generateToken = () => crypto.randomBytes(32).toString("hex");
-
-const ensureDefaultCategories = async (userId) => {
-    const defaults = [
-        { name: "Sales", type: "income" },
-        { name: "Stock", type: "expense" },
-    ];
-
-    await Promise.all(
-        defaults.map((entry) =>
-            Category.findOneAndUpdate(
-                { user: userId, name: entry.name, type: entry.type },
-                { $setOnInsert: { isDefault: true }, $set: { isActive: true } },
-                { upsert: true, new: true, setDefaultsOnInsert: true }
-            )
-        )
-    );
-};
 
 // --- Registration Flow ---
 
@@ -88,12 +71,16 @@ export const completeRegistration = async ({ registrationToken, name, fname, lna
     const existing = await User.findOne({ email });
     if (existing) throw { status: 409, message: "Email is already registered" };
 
+    const defaults = await getCategoryRegistrationDefaults();
     const user = await User.create({
         name,
         fname,
         lname,
         email,
         password: hashedPassword,
+        categoryLimit: defaults.categoryLimit,
+        defaultIncomeCategories: [defaults.incomeName],
+        defaultExpenseCategories: [defaults.expenseName],
     });
 
     const defaultCurrency = await Currency.findOne({ isDefault: true });
@@ -102,14 +89,14 @@ export const completeRegistration = async ({ registrationToken, name, fname, lna
         await user.save();
     }
 
-    await ensureDefaultCategories(user._id);
+    await ensureUserDefaultCategories(user._id, defaults.incomeName, defaults.expenseName);
     await Token.deleteOne({ _id: tokenRecord._id });
 
     // Send Welcome Email (Fire and forget)
     const displayName = user.name || `${user.fname} ${user.lname}`.trim();
     sendWelcomeEmail(user.email, displayName).catch(err => console.error("Failed to send welcome email:", err));
 
-    const tokens = issueTokens(user._id);
+    const tokens = issueTokens(user._id, user.tokenVersion || 0);
     return { user, tokens };
 };
 

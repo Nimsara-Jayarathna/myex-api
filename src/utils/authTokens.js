@@ -63,16 +63,16 @@ const ensureTokenSecrets = () => {
   }
 };
 
-const signToken = (userId, secret, expiresIn, tokenType) => {
+const signToken = (userId, secret, expiresIn, tokenType, tokenVersion = 0) => {
   ensureTokenSecrets();
-  return jwt.sign({ userId, tokenType }, secret, { expiresIn });
+  return jwt.sign({ userId, tokenType, tokenVersion }, secret, { expiresIn });
 };
 
-export const generateAccessToken = (userId) =>
-  signToken(userId, ACCESS_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, "access");
+export const generateAccessToken = (userId, tokenVersion = 0) =>
+  signToken(userId, ACCESS_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, "access", tokenVersion);
 
-export const generateRefreshToken = (userId) =>
-  signToken(userId, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRES_IN, "refresh");
+export const generateRefreshToken = (userId, tokenVersion = 0) =>
+  signToken(userId, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRES_IN, "refresh", tokenVersion);
 
 export const verifyAccessToken = (token) => {
   ensureTokenSecrets();
@@ -106,7 +106,7 @@ export const clearAuthCookies = (res) => {
   res.clearCookie("refreshToken", baseCookieOptions);
 };
 
-export const issueTokens = (userId) => ({
-  accessToken: generateAccessToken(userId),
-  refreshToken: generateRefreshToken(userId),
+export const issueTokens = (userId, tokenVersion = 0) => ({
+  accessToken: generateAccessToken(userId, tokenVersion),
+  refreshToken: generateRefreshToken(userId, tokenVersion),
 });
