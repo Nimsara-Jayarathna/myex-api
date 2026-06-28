@@ -137,3 +137,26 @@ This branch replaces that middleware with `src/common/middleware/no-sql-sanitiza
 ## Package lock note
 
 The uploaded branch contained a stale Express-era `package-lock.json` that did not include the NestJS dependencies. It was removed so installs do not use the wrong dependency graph. Run `npm install` once after pulling this branch and commit the newly generated `package-lock.json` from your environment if you want deterministic `npm ci` builds.
+
+## Windows install note
+
+`npm install` uses `scripts/prepare-husky.mjs` to set up Husky git hooks only when a `.git` directory exists. The prepare script is Windows-safe and non-blocking, so Husky setup warnings will not fail dependency installation.
+
+Recommended first run on Windows PowerShell:
+
+```powershell
+npm install
+npm run start:dev
+```
+
+For full debug logs:
+
+```powershell
+npm run start:debug
+```
+
+For release validation before deployment:
+
+```powershell
+npm run release
+```

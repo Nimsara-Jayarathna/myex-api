@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
@@ -14,7 +15,7 @@ import { setupPublicSwagger } from './docs/swagger/public-swagger';
 import { setupAdminSwagger } from './docs/swagger/admin-swagger';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', 1);
   const config = app.get(ConfigService);
 
@@ -47,3 +48,4 @@ async function bootstrap(): Promise<void> {
 }
 
 void bootstrap();
+
