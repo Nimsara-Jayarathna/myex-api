@@ -1,53 +1,109 @@
-# Blipzo API — NestJS Modular Monolith
+# Blipzo API — NestJS Modular Refactor
 
-This is the updated NestJS codebase based on the original Express/Mongo API.
+This branch converts the Express codebase into a NestJS modular monolith while keeping the main branch API response contracts as the source of truth.
 
-## Routing decision
+## Route contract
 
-- Public API is versioned:
-  - `/api/v1/*`
-  - `/api/v1.1/*`
-  - future placeholder: `/api/v2/*`
-- Internal admin API is not public-versioned:
-  - `/internal/admin/*`
+Public API routes remain versioned:
+
+```txt
+/api/v1/*
+/api/v1.1/*
+```
+
+Internal admin routes are intentionally unversioned and moved to:
+
+```txt
+/internal/admin/*
+```
+
+## Response contract alignment
+
+The NestJS response layer is route-aware:
+
+```txt
+/api/v1/*                         legacy raw response format
+/api/v1.1 inherited v1 routes     legacy raw response format
+/api/v1.1 new routes              { success, message, data }
+/internal/admin/*                 { success, message, data, meta }
+```
+
+Errors are also route-aware:
+
+```txt
+/api/v1/*                         { message, errors?, stack? }
+/api/v1.1/*                       { success: false, error: { code, message, details } }
+/internal/admin/*                 { success: false, message, meta, errors? }
+```
 
 ## Admin modules
 
-Admin is separated into modular domains:
+Admin functionality is split into submodules:
 
-- `admin/auth`
-- `admin/users`
-- `admin/categories`
-- `admin/currencies`
-- `admin/dashboard`
-- `admin/system`
-- `admin/audit`
+```txt
+src/modules/admin/auth
+src/modules/admin/users
+src/modules/admin/categories
+src/modules/admin/currencies
+src/modules/admin/dashboard
+src/modules/admin/system
+src/modules/admin/audit
+```
+
+Admin HTTP controllers live under:
+
+```txt
+src/interfaces/http/admin
+```
+
+## Public API version modules
+
+Public versioned controllers live under:
+
+```txt
+src/interfaces/http/public/v1
+src/interfaces/http/public/v1_1
+src/interfaces/http/public/v2
+```
+
+Business logic is shared through:
+
+```txt
+src/modules/*
+```
 
 ## Quality gates
 
-The project includes:
+Included:
 
 - TypeScript strict mode
 - ESLint
 - Prettier
 - lint-staged
 - Husky pre-commit hook
-- Jest unit tests
-- MongoDB integration test structure
-- Supertest e2e test structure
+- Unit test structure
+- Integration test structure with mongodb-memory-server
+- E2E test structure with Supertest/Nest test app
 - MongoDB data/index migrations
-- Seeders for admin and currencies
+- Seeders
 
-## Common commands
+## Main commands
 
 ```bash
 npm install
-npm run start:dev
 npm run lint
 npm run format:check
 npm run test
 npm run test:e2e
+npm run build
 npm run migration:up
-npm run seed:admin
-npm run seed:currencies
+```
+
+## Migration rule
+
+MongoDB migrations are used for production-safe document/index changes. Seeders are separate and only for default startup data.
+
+```txt
+migrations = versioned data/index/schema changes
+seeders    = default data bootstrap
 ```

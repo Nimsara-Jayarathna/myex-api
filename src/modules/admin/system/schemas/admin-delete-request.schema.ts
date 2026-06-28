@@ -25,13 +25,13 @@ export class AdminDeleteRequest {
   @Prop({ default: Date.now })
   requestedAt!: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   reviewedAt?: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   reviewedBy?: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   reviewNote?: string | null;
 }
 

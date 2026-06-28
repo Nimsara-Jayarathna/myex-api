@@ -19,28 +19,28 @@ export class AdminBackupJob {
   @Prop({ default: 'remote_cloud_storage_node_01' })
   target!: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   initiatedBy?: string | null;
 
   @Prop({ default: Date.now })
   startedAt!: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   completedAt?: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   fileName?: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   storagePath?: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Number, default: null })
   fileSizeBytes?: number | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   errorCode?: string | null;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   errorMessage?: string | null;
 
   @Prop({ default: false })

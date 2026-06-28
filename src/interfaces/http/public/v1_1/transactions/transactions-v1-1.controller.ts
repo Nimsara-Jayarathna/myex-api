@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ResponseMode } from '../../../../../common/decorators/response-mode.decorator';
 import { JwtAuthGuard } from '../../../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../../../common/decorators/current-user.decorator';
 import type { UserDocument } from '../../../../../modules/users/schemas/user.schema';
@@ -7,6 +19,7 @@ import { CreateTransactionDto } from '../../../../../modules/transactions/dto/cr
 import { UpdateTransactionDto } from '../../../../../modules/transactions/dto/update-transaction.dto';
 import { TransactionFilterDto } from '../../../../../modules/transactions/dto/transaction-filter.dto';
 
+@ResponseMode('legacy')
 @Controller('api/v1.1/transactions')
 @UseGuards(JwtAuthGuard)
 export class TransactionsV11Controller {
@@ -38,7 +51,8 @@ export class TransactionsV11Controller {
   }
 
   @Delete(':id')
-  remove(@CurrentUser() user: UserDocument, @Param('id') id: string) {
-    return this.transactionsService.deleteTransaction(user, id);
+  @HttpCode(204)
+  async remove(@CurrentUser() user: UserDocument, @Param('id') id: string): Promise<void> {
+    await this.transactionsService.deleteTransaction(user, id);
   }
 }

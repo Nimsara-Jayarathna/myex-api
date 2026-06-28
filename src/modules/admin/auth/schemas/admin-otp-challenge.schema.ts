@@ -34,16 +34,16 @@ export class AdminOtpChallenge {
   @Prop({ default: Date.now })
   resendAvailableAt!: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   lockedUntil?: Date | null;
 
   @Prop({ required: true, index: { expireAfterSeconds: 0 } })
   expiresAt!: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   usedAt?: Date | null;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   invalidatedAt?: Date | null;
 
   createdAt!: Date;

@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import type { Response } from 'express';
+import { ResponseMode } from '../../../../../common/decorators/response-mode.decorator';
 import { JwtAuthGuard } from '../../../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../../../common/decorators/current-user.decorator';
 import type { UserDocument } from '../../../../../modules/users/schemas/user.schema';
@@ -7,6 +20,7 @@ import { CreateCategoryDto } from '../../../../../modules/categories/dto/create-
 import { UpdateCategoryDto } from '../../../../../modules/categories/dto/update-category.dto';
 import { CategoryQueryDto } from '../../../../../modules/categories/dto/category-query.dto';
 
+@ResponseMode('legacy')
 @Controller('api/v1/categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesV1Controller {
@@ -23,8 +37,14 @@ export class CategoriesV1Controller {
   }
 
   @Post()
-  create(@CurrentUser() user: UserDocument, @Body() dto: CreateCategoryDto) {
-    return this.categoriesService.createCategory(user, dto);
+  async create(
+    @CurrentUser() user: UserDocument,
+    @Body() dto: CreateCategoryDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.categoriesService.createCategory(user, dto);
+    res.status(result.reactivated ? 200 : 201);
+    return result;
   }
 
   @Patch(':id')

@@ -46,7 +46,7 @@ export class User {
   @Prop({ default: false })
   mustChangePassword!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   lastLoginAt?: Date | null;
 
   @Prop()

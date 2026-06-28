@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
@@ -37,7 +37,7 @@ async function bootstrap(): Promise<void> {
     }),
   );
   app.useGlobalFilters(new MongooseExceptionFilter(), new HttpExceptionFilter());
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));
 
   setupPublicSwagger(app);
   setupAdminSwagger(app);

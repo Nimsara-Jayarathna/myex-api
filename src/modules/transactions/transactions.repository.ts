@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
+import type { FilterQuery, Model, PipelineStage, SortOrder, Types } from 'mongoose';
 import { Transaction, type TransactionDocument } from './schemas/transaction.schema';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class TransactionsRepository {
     return this.transactionModel.create(payload);
   }
 
-  find(filter: FilterQuery<TransactionDocument>, sort: Record<string, 1 | -1>, skip?: number, limit?: number) {
+  find(filter: FilterQuery<TransactionDocument>, sort: Record<string, SortOrder>, skip?: number, limit?: number) {
     const query = this.transactionModel.find(filter).sort(sort).lean();
     if (skip !== undefined && limit !== undefined) query.skip(skip).limit(limit);
     return query;

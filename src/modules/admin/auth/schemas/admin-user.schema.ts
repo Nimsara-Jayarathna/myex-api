@@ -19,7 +19,7 @@ export class AdminUser {
   @Prop({ default: true })
   isActive!: boolean;
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   lastLoginAt?: Date | null;
 
   createdAt!: Date;

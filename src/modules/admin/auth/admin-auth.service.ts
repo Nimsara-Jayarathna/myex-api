@@ -57,12 +57,17 @@ export class AdminAuthService {
     admin.lastLoginAt = new Date();
     await admin.save();
 
+    const expiresIn = (process.env.JWT_ACCESS_EXPIRES_IN ?? '15m') as `${number}${'s' | 'm' | 'h' | 'd' | 'w'}`;
     const accessToken = jwt.sign(
       { adminId: String(admin._id), type: 'admin' },
       process.env.JWT_ACCESS_SECRET ?? 'local-access-secret',
-      { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m' },
+      { expiresIn },
     );
-    return { admin: this.sanitizeAdmin(admin), accessToken };
+    return {
+      admin: this.sanitizeAdmin(admin),
+      accessToken,
+      session: { accessTokenExpiresInSeconds: 15 * 60 },
+    };
   }
 
   async resendOtp(challengeToken: string) {

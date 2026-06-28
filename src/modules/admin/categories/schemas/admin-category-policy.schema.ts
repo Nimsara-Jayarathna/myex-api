@@ -19,7 +19,7 @@ export class AdminCategoryPolicy {
   @Prop({ required: true, default: 10, min: 1, max: 1000 })
   defaultCategoryLimit!: number;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   updatedBy?: string | null;
 }
 

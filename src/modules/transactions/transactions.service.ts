@@ -75,7 +75,7 @@ export class TransactionsService {
 
     const sortField = queryParams.sortBy ?? 'date';
     const sortDir = queryParams.sortDir === 'asc' ? 1 : -1;
-    const sort = { [sortField]: sortDir, createdAt: -1 as const };
+    const sort: Record<string, 1 | -1> = { [sortField]: sortDir, createdAt: -1 };
     const usePagination = Boolean(queryParams.page && queryParams.pageSize);
     const page = queryParams.page ?? 1;
     const pageSize = queryParams.pageSize ?? 20;
