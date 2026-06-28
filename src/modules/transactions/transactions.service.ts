@@ -32,7 +32,8 @@ export class TransactionsService {
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       throw new BadRequestException('amount must be a positive number');
     }
-    if (requireDate && !body.date) throw new BadRequestException('date is required for custom transactions');
+    if (requireDate && !body.date)
+      throw new BadRequestException('date is required for custom transactions');
 
     const categoryDoc = await this.resolveCategoryForCreation({
       user,
@@ -62,7 +63,8 @@ export class TransactionsService {
     const filter: FilterQuery<TransactionDocument> = { user: user._id };
     if (queryParams.status) filter.status = queryParams.status;
     if (queryParams.type) filter.type = queryParams.type;
-    if (queryParams.category) filter.category = { $regex: queryParams.category.trim(), $options: 'i' };
+    if (queryParams.category)
+      filter.category = { $regex: queryParams.category.trim(), $options: 'i' };
     if (queryParams.startDate || queryParams.endDate) {
       filter.date = {};
       if (queryParams.startDate) filter.date.$gte = normalizeToUtcMidnight(queryParams.startDate);
@@ -87,7 +89,9 @@ export class TransactionsService {
       usePagination ? pageSize : undefined,
     );
     const mapped = transactions.map((transaction) => this.buildTransactionResponse(transaction));
-    return usePagination ? { transactions: mapped, total, page, pageSize } : { transactions: mapped };
+    return usePagination
+      ? { transactions: mapped, total, page, pageSize }
+      : { transactions: mapped };
   }
 
   async getSummary(user: UserDocument) {
@@ -168,8 +172,11 @@ export class TransactionsService {
       input.type === 'income'
         ? normalizeCategoryName(input.user.defaultIncomeCategories?.[0])
         : normalizeCategoryName(input.user.defaultExpenseCategories?.[0]);
-    const fallbackCategoryName = lookup.categoryId ? undefined : lookup.categoryName || defaultCategoryName;
-    if (!lookup.categoryId && !fallbackCategoryName) throw new BadRequestException('category is required');
+    const fallbackCategoryName = lookup.categoryId
+      ? undefined
+      : lookup.categoryName || defaultCategoryName;
+    if (!lookup.categoryId && !fallbackCategoryName)
+      throw new BadRequestException('category is required');
 
     const category = await this.resolveCategory({
       userId: input.user._id,
@@ -181,7 +188,8 @@ export class TransactionsService {
   }
 
   private deriveCategoryLookup(input: { category?: string; categoryId?: string }) {
-    const normalizedCategoryId = typeof input.categoryId === 'string' ? input.categoryId.trim() : input.categoryId;
+    const normalizedCategoryId =
+      typeof input.categoryId === 'string' ? input.categoryId.trim() : input.categoryId;
     if (normalizedCategoryId) return { categoryId: normalizedCategoryId, categoryName: undefined };
     const normalizedCategory = normalizeCategoryName(input.category);
     if (normalizedCategory && mongoose.Types.ObjectId.isValid(normalizedCategory)) {
@@ -198,7 +206,8 @@ export class TransactionsService {
   }) {
     let category: CategoryDocument | null = null;
     if (input.categoryId) {
-      if (!mongoose.Types.ObjectId.isValid(input.categoryId)) throw new BadRequestException('categoryId is invalid');
+      if (!mongoose.Types.ObjectId.isValid(input.categoryId))
+        throw new BadRequestException('categoryId is invalid');
       category = await this.categoriesRepository.findOne({
         _id: input.categoryId,
         type: input.type,
@@ -211,7 +220,10 @@ export class TransactionsService {
         $or: [{ user: input.userId }, { user: null }],
       });
     }
-    if (!category) throw new NotFoundException('Category not found. Create it before assigning to a transaction.');
+    if (!category)
+      throw new NotFoundException(
+        'Category not found. Create it before assigning to a transaction.',
+      );
     if (!category.isActive) throw new BadRequestException('Category is inactive');
     return category;
   }

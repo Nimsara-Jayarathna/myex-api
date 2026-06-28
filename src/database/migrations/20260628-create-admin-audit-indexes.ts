@@ -8,8 +8,17 @@ export default {
     await connection.collection('adminauditlogs').createIndex({ path: 1 });
   },
   async down(connection: Connection): Promise<void> {
-    await connection.collection('adminauditlogs').dropIndex('createdAt_-1').catch(() => undefined);
-    await connection.collection('adminauditlogs').dropIndex('adminEmail_1').catch(() => undefined);
-    await connection.collection('adminauditlogs').dropIndex('path_1').catch(() => undefined);
+    await connection
+      .collection('adminauditlogs')
+      .dropIndex('createdAt_-1')
+      .catch(() => undefined);
+    await connection
+      .collection('adminauditlogs')
+      .dropIndex('adminEmail_1')
+      .catch(() => undefined);
+    await connection
+      .collection('adminauditlogs')
+      .dropIndex('path_1')
+      .catch(() => undefined);
   },
 };

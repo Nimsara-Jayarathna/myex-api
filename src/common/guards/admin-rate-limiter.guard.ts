@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { getClientIp } from '../utils/logger';
 
@@ -26,7 +32,10 @@ export class AdminRateLimiter implements CanActivate {
 
     current.count += 1;
     if (current.count > this.limit) {
-      throw new HttpException('Too many admin requests. Please try again later.', HttpStatus.TOO_MANY_REQUESTS);
+      throw new HttpException(
+        'Too many admin requests. Please try again later.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
     return true;
   }

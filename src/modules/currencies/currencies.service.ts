@@ -29,7 +29,9 @@ export class CurrenciesService {
   async updateUserCurrency(user: UserDocument, currencyId: string) {
     const currency = await this.currenciesRepository.findById(currencyId);
     if (!currency || !currency.isActive) throw new NotFoundException('Currency not found');
-    const updated = await this.usersRepository.updateById(String(user._id), { currency: currency._id });
+    const updated = await this.usersRepository.updateById(String(user._id), {
+      currency: currency._id,
+    });
     return {
       user: updated,
       currency: this.buildCurrencyResponse(currency),

@@ -1,10 +1,4 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ERROR_CODES, HTTP_STATUS, type ErrorCode } from '../constants/error-codes';
 import { adminError, apiError } from '../utils/response';
@@ -115,7 +109,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         code = ERROR_CODES.VALIDATION_ERROR;
         message = 'Validation Error';
         details = Object.fromEntries(
-          Object.values(err.errors).map((val) => [val.path ?? 'field', val.message ?? 'Invalid value']),
+          Object.values(err.errors).map((val) => [
+            val.path ?? 'field',
+            val.message ?? 'Invalid value',
+          ]),
         );
       }
 

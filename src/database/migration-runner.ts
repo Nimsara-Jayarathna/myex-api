@@ -19,7 +19,10 @@ async function loadMigrations(): Promise<Migration[]> {
 
   const migrations: Migration[] = [];
   for (const file of files) {
-    const mod = (await import(path.join(migrationDir, file))) as { default?: Migration; migration?: Migration };
+    const mod = (await import(path.join(migrationDir, file))) as {
+      default?: Migration;
+      migration?: Migration;
+    };
     const migration = mod.default ?? mod.migration;
     if (migration) migrations.push(migration);
   }
@@ -64,7 +67,10 @@ async function status(connection: Connection): Promise<void> {
 
 async function create(): Promise<void> {
   const name = process.argv[3] ?? 'new-migration';
-  const stamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:T.Z]/g, '')
+    .slice(0, 14);
   const id = `${stamp}-${name}`;
   const filePath = path.join(migrationDir, `${id}.ts`);
   await fs.writeFile(

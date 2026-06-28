@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Types } from 'mongoose';
 import { CategoriesRepository } from './categories.repository';
 import type { CategoryDocument } from './schemas/category.schema';
@@ -11,7 +16,7 @@ const ALLOWED_TYPES = ['income', 'expense'] as const;
 type CategoryType = (typeof ALLOWED_TYPES)[number];
 
 type CategoryResponse = {
-  id: Types.ObjectId;
+  id: string;
   name: string;
   type: CategoryType;
   isDefault: boolean;
@@ -28,9 +33,12 @@ const normalizeKeyName = (name = '') => normalizeName(name).toLowerCase();
 export class CategoriesService {
   constructor(private readonly categoriesRepository: CategoriesRepository) {}
 
-  buildCategoryResponse(category: CategoryDocument, override?: { isDefault?: boolean }): CategoryResponse {
+  buildCategoryResponse(
+    category: CategoryDocument,
+    override?: { isDefault?: boolean },
+  ): CategoryResponse {
     return {
-      id: category._id,
+      id: String(category._id),
       name: category.name,
       type: category.type,
       isDefault: override?.isDefault ?? category.isDefault,
@@ -65,7 +73,11 @@ export class CategoriesService {
     const name = normalizeName(dto.name);
     if (!name) throw new BadRequestException('name is required');
 
-    const existing = await this.categoriesRepository.findOne({ user: user._id, type: dto.type, name });
+    const existing = await this.categoriesRepository.findOne({
+      user: user._id,
+      type: dto.type,
+      name,
+    });
     if (existing?.isActive) throw new ConflictException('Category already exists');
     if (existing && !existing.isActive) {
       existing.isActive = true;
@@ -156,7 +168,11 @@ export class CategoriesService {
         continue;
       }
 
-      if (currentIsUserCategory === existingIsUserCategory && category.isDefault && !existing.isDefault) {
+      if (
+        currentIsUserCategory === existingIsUserCategory &&
+        category.isDefault &&
+        !existing.isDefault
+      ) {
         byTypeAndName.set(key, category);
       }
     }
@@ -192,8 +208,10 @@ export class CategoriesService {
       if (!defaultCandidate) continue;
 
       const visibleDefault =
-        visibleCategories.find((category) => this.categoryDedupeKey(category) === this.categoryDedupeKey(defaultCandidate)) ??
-        defaultCandidate;
+        visibleCategories.find(
+          (category) =>
+            this.categoryDedupeKey(category) === this.categoryDedupeKey(defaultCandidate),
+        ) ?? defaultCandidate;
 
       defaultIdsByType.set(type, String(visibleDefault._id));
     }

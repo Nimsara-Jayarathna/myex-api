@@ -13,7 +13,12 @@ export class TransactionsRepository {
     return this.transactionModel.create(payload);
   }
 
-  find(filter: FilterQuery<TransactionDocument>, sort: Record<string, SortOrder>, skip?: number, limit?: number) {
+  find(
+    filter: FilterQuery<TransactionDocument>,
+    sort: Record<string, SortOrder>,
+    skip?: number,
+    limit?: number,
+  ) {
     const query = this.transactionModel.find(filter).sort(sort).lean();
     if (skip !== undefined && limit !== undefined) query.skip(skip).limit(limit);
     return query;

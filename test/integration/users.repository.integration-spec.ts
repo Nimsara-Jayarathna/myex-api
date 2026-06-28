@@ -18,7 +18,12 @@ describe('User repository integration shape', () => {
 
   it('creates a user document', async () => {
     const User = mongoose.model('User');
-    const user = await User.create({ fname: 'Test', lname: 'User', email: 'int@example.com', password: 'hash' });
+    const user = await User.create({
+      fname: 'Test',
+      lname: 'User',
+      email: 'int@example.com',
+      password: 'hash',
+    });
     expect(user.email).toBe('int@example.com');
   });
 });

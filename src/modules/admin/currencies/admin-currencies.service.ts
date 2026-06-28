@@ -19,7 +19,10 @@ export class AdminCurrenciesService {
 
   async createCurrency(dto: AdminCurrencyDto) {
     if (dto.isDefault) await this.currenciesRepository.updateMany({}, { isDefault: false });
-    const currency = await this.currenciesRepository.create({ ...dto, code: dto.code.toUpperCase().trim() });
+    const currency = await this.currenciesRepository.create({
+      ...dto,
+      code: dto.code.toUpperCase().trim(),
+    });
     return { currency };
   }
 

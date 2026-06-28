@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ResponseMode } from '../../../../common/decorators/response-mode.decorator';
 import { ResponseMessage } from '../../../../common/decorators/response-message.decorator';
@@ -11,11 +21,21 @@ import { AdminAuditLogInterceptor } from '../../../../common/interceptors/admin-
 import { CurrentAdmin } from '../../../../common/decorators/current-admin.decorator';
 import type { AdminUserDocument } from '../../../../modules/admin/auth/schemas/admin-user.schema';
 import { AdminSystemService } from '../../../../modules/admin/system/admin-system.service';
-import { CreateDeleteRequestDto, DecideDeleteRequestDto, RunBackupDto } from '../../../../modules/admin/system/dto/admin-system.dto';
+import {
+  CreateDeleteRequestDto,
+  DecideDeleteRequestDto,
+  RunBackupDto,
+} from '../../../../modules/admin/system/dto/admin-system.dto';
 
 @ResponseMode('admin')
 @Controller('internal/admin/system')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminSystemController {
   constructor(private readonly adminSystemService: AdminSystemService) {}
@@ -35,7 +55,9 @@ export class InternalAdminSystemController {
   @Post('backup/run')
   @ResponseMessage('Backup started.')
   runBackup(@Body() dto: RunBackupDto, @CurrentAdmin() admin: AdminUserDocument) {
-    return this.adminSystemService.startBackup(admin.email, { simulateFailure: dto.simulateFailure });
+    return this.adminSystemService.startBackup(admin.email, {
+      simulateFailure: dto.simulateFailure,
+    });
   }
 
   @Get('backup/:id')
@@ -71,7 +93,11 @@ export class InternalAdminSystemController {
 
   @Post('delete-requests/:id/decision')
   @ResponseMessage('Delete request decision saved.')
-  decideDeleteRequest(@Param('id') id: string, @Body() dto: DecideDeleteRequestDto, @CurrentAdmin() admin: AdminUserDocument) {
+  decideDeleteRequest(
+    @Param('id') id: string,
+    @Body() dto: DecideDeleteRequestDto,
+    @CurrentAdmin() admin: AdminUserDocument,
+  ) {
     return this.adminSystemService.decideDeleteRequest(id, dto, admin.email);
   }
 }

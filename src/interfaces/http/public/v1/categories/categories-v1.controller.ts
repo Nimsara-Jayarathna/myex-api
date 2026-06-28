@@ -48,7 +48,11 @@ export class CategoriesV1Controller {
   }
 
   @Patch(':id')
-  setDefault(@CurrentUser() user: UserDocument, @Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+  setDefault(
+    @CurrentUser() user: UserDocument,
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+  ) {
     return this.categoriesService.setDefaultCategory(user, id, dto);
   }
 

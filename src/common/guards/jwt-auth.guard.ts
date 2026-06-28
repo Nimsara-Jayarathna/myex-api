@@ -16,7 +16,10 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new UnauthorizedException('Access token missing');
 
     const decoded = verifyAccessToken(token);
-    const user = await this.userModel.findById(decoded.userId).select('-password').populate('currency');
+    const user = await this.userModel
+      .findById(decoded.userId)
+      .select('-password')
+      .populate('currency');
     if (!user) throw new UnauthorizedException('User not found for this token');
     if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
       throw new UnauthorizedException('Session expired');

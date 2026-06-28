@@ -25,7 +25,10 @@ async function main(): Promise<void> {
 
   const defaultCurrency = await Currency.findOne({ isDefault: true });
   if (defaultCurrency) {
-    await User.updateMany({ $or: [{ currency: { $exists: false } }, { currency: null }] }, { $set: { currency: defaultCurrency._id } });
+    await User.updateMany(
+      { $or: [{ currency: { $exists: false } }, { currency: null }] },
+      { $set: { currency: defaultCurrency._id } },
+    );
   }
   logger.info({ message: 'Currencies seeded.' });
   await mongoose.disconnect();

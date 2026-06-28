@@ -22,15 +22,16 @@ if (!existsSync(huskyBin)) {
   process.exit(0);
 }
 
-const result = process.platform === 'win32'
-  ? spawnSync('cmd.exe', ['/d', '/s', '/c', `"${huskyBin}"`], {
-      stdio: 'inherit',
-      env: process.env,
-    })
-  : spawnSync(huskyBin, [], {
-      stdio: 'inherit',
-      env: process.env,
-    });
+const result =
+  process.platform === 'win32'
+    ? spawnSync('cmd.exe', ['/d', '/s', '/c', `"${huskyBin}"`], {
+        stdio: 'inherit',
+        env: process.env,
+      })
+    : spawnSync(huskyBin, [], {
+        stdio: 'inherit',
+        env: process.env,
+      });
 
 if (result.error) {
   console.warn(`[prepare] Husky setup skipped: ${result.error.message}`);

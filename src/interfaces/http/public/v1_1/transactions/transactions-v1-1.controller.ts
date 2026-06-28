@@ -46,7 +46,11 @@ export class TransactionsV11Controller {
   }
 
   @Put(':id')
-  update(@CurrentUser() user: UserDocument, @Param('id') id: string, @Body() dto: UpdateTransactionDto) {
+  update(
+    @CurrentUser() user: UserDocument,
+    @Param('id') id: string,
+    @Body() dto: UpdateTransactionDto,
+  ) {
     return this.transactionsService.updateTransaction(user, id, dto);
   }
 

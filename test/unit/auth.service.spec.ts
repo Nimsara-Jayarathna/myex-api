@@ -24,13 +24,20 @@ describe('AuthService', () => {
     })
       .overrideProvider(AuthService)
       .useValue({
-        registerUser: jest.fn().mockResolvedValue({ user: { email: 'test@example.com' }, tokens: {} }),
+        registerUser: jest
+          .fn()
+          .mockResolvedValue({ user: { email: 'test@example.com' }, tokens: {} }),
       })
       .compile();
 
     const service = module.get<AuthService>(AuthService);
     await expect(
-      service.registerUser({ fname: 'Test', lname: 'User', email: 'test@example.com', password: 'Password123' }),
+      service.registerUser({
+        fname: 'Test',
+        lname: 'User',
+        email: 'test@example.com',
+        password: 'Password123',
+      }),
     ).resolves.toHaveProperty('user');
   });
 });

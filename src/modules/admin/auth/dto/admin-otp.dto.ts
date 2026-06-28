@@ -1,14 +1,16 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class AdminOtpVerifyDto {
   @IsString()
-  challengeToken!: string;
-
-  @IsString()
   otp!: string;
+
+  @IsOptional()
+  @IsString()
+  challengeToken?: string;
 }
 
 export class AdminOtpActionDto {
+  @IsOptional()
   @IsString()
-  challengeToken!: string;
+  challengeToken?: string;
 }

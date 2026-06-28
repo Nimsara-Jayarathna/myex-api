@@ -3,7 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import { AdminBackupJob, type AdminBackupJobDocument } from './schemas/admin-backup-job.schema';
-import { AdminDeleteRequest, type AdminDeleteRequestDocument } from './schemas/admin-delete-request.schema';
+import {
+  AdminDeleteRequest,
+  type AdminDeleteRequestDocument,
+} from './schemas/admin-delete-request.schema';
 import type { CreateDeleteRequestDto, DecideDeleteRequestDto } from './dto/admin-system.dto';
 
 @Injectable()
@@ -68,7 +71,11 @@ export class AdminSystemService {
     const filter: Record<string, unknown> = {};
     if (query.status) filter.status = query.status;
     const [requests, total] = await Promise.all([
-      this.deleteRequestModel.find(filter).sort({ requestedAt: -1 }).skip((page - 1) * pageSize).limit(pageSize),
+      this.deleteRequestModel
+        .find(filter)
+        .sort({ requestedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize),
       this.deleteRequestModel.countDocuments(filter),
     ]);
     return { requests, total, page, pageSize };

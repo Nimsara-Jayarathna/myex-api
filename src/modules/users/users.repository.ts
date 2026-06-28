@@ -28,7 +28,12 @@ export class UsersRepository {
   }
 
   list(filter: FilterQuery<UserDocument>, skip = 0, limit = 20) {
-    return this.userModel.find(filter).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit);
+    return this.userModel
+      .find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
   }
 
   count(filter: FilterQuery<UserDocument>) {

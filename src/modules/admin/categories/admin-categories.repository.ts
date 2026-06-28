@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { FilterQuery, Model } from 'mongoose';
 import { Category, type CategoryDocument } from '../../categories/schemas/category.schema';
-import { AdminCategoryPolicy, type AdminCategoryPolicyDocument } from './schemas/admin-category-policy.schema';
+import {
+  AdminCategoryPolicy,
+  type AdminCategoryPolicyDocument,
+} from './schemas/admin-category-policy.schema';
 
 @Injectable()
 export class AdminCategoriesRepository {
   constructor(
     @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>,
-    @InjectModel(AdminCategoryPolicy.name) private readonly policyModel: Model<AdminCategoryPolicyDocument>,
+    @InjectModel(AdminCategoryPolicy.name)
+    private readonly policyModel: Model<AdminCategoryPolicyDocument>,
   ) {}
 
   find(filter: FilterQuery<CategoryDocument>) {

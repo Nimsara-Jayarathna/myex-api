@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ResponseMode } from '../../../../common/decorators/response-mode.decorator';
 import { ResponseMessage } from '../../../../common/decorators/response-message.decorator';
 import { AdminJwtGuard } from '../../../../common/guards/admin-jwt.guard';
@@ -18,7 +29,13 @@ import {
 
 @ResponseMode('admin')
 @Controller('internal/admin/categories')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminCategoriesController {
   constructor(private readonly adminCategoriesService: AdminCategoriesService) {}
@@ -43,7 +60,11 @@ export class InternalAdminCategoriesController {
 
   @Patch(':id')
   @ResponseMessage('Category updated.')
-  updateCategory(@Param('id') id: string, @Body() dto: UpdateAdminCategoryDto, @CurrentAdmin() admin: AdminUserDocument) {
+  updateCategory(
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminCategoryDto,
+    @CurrentAdmin() admin: AdminUserDocument,
+  ) {
     return this.adminCategoriesService.updateCategory(id, dto, admin.email);
   }
 

@@ -8,10 +8,18 @@ export class EmailService {
   }
 
   async sendPasswordReset(email: string, token: string): Promise<void> {
-    logger.info({ message: 'Password reset email queued', email: maskEmail(email), tokenPreview: token });
+    logger.info({
+      message: 'Password reset email queued',
+      email: maskEmail(email),
+      tokenPreview: token,
+    });
   }
 
   async sendTemporaryPassword(email: string, temporaryPassword: string): Promise<void> {
-    logger.info({ message: 'Temporary password email queued', email: maskEmail(email), temporaryPasswordPreview: temporaryPassword });
+    logger.info({
+      message: 'Temporary password email queued',
+      email: maskEmail(email),
+      temporaryPasswordPreview: temporaryPassword,
+    });
   }
 }

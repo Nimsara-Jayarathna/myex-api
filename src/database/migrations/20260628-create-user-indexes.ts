@@ -7,7 +7,13 @@ export default {
     await connection.collection('users').createIndex({ status: 1 });
   },
   async down(connection: Connection): Promise<void> {
-    await connection.collection('users').dropIndex('email_1').catch(() => undefined);
-    await connection.collection('users').dropIndex('status_1').catch(() => undefined);
+    await connection
+      .collection('users')
+      .dropIndex('email_1')
+      .catch(() => undefined);
+    await connection
+      .collection('users')
+      .dropIndex('status_1')
+      .catch(() => undefined);
   },
 };

@@ -71,6 +71,11 @@ export class AdminUsersService {
   async getUserActivity(id: string) {
     const user = await this.adminUsersRepository.findById(id);
     if (!user) throw new NotFoundException('User not found');
-    return { userId: id, lastLoginAt: user.lastLoginAt, createdAt: user.createdAt, updatedAt: user.updatedAt };
+    return {
+      userId: id,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 }

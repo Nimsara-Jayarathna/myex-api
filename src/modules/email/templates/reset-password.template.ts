@@ -1,1 +1,2 @@
-export const resetPasswordTemplate = (token: string): string => `Use this token to reset your password: ${token}`;
+export const resetPasswordTemplate = (token: string): string =>
+  `Use this token to reset your password: ${token}`;

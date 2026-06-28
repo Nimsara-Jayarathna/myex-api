@@ -4,7 +4,10 @@ import { Token, TokenSchema } from './schemas/token.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { Currency, CurrencySchema } from '../currencies/schemas/currency.schema';
 import { Category, CategorySchema } from '../categories/schemas/category.schema';
-import { AdminCategoryPolicy, AdminCategoryPolicySchema } from '../admin/categories/schemas/admin-category-policy.schema';
+import {
+  AdminCategoryPolicy,
+  AdminCategoryPolicySchema,
+} from '../admin/categories/schemas/admin-category-policy.schema';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 import { UsersRepository } from '../users/users.repository';
@@ -23,7 +26,13 @@ import { EmailModule } from '../email/email.module';
       { name: AdminCategoryPolicy.name, schema: AdminCategoryPolicySchema },
     ]),
   ],
-  providers: [AuthRepository, AuthService, UsersRepository, CurrenciesRepository, CategoryDefaultsService],
+  providers: [
+    AuthRepository,
+    AuthService,
+    UsersRepository,
+    CurrenciesRepository,
+    CategoryDefaultsService,
+  ],
   exports: [MongooseModule, AuthRepository, AuthService],
 })
 export class AuthModule {}

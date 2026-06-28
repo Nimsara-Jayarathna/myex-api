@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ResponseMode } from '../../../../common/decorators/response-mode.decorator';
 import { ResponseMessage } from '../../../../common/decorators/response-message.decorator';
 import { AdminJwtGuard } from '../../../../common/guards/admin-jwt.guard';
@@ -13,7 +23,13 @@ import { UpdateUserStatusDto } from '../../../../modules/admin/users/dto/update-
 
 @ResponseMode('admin')
 @Controller('internal/admin/users')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminUsersController {
   constructor(private readonly adminUsersService: AdminUsersService) {}

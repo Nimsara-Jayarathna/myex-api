@@ -11,6 +11,12 @@ import { TransactionsV11Controller } from './transactions/transactions-v1-1.cont
 
 @Module({
   imports: [AuthModule, CategoriesModule, TransactionsModule, CurrenciesModule],
-  controllers: [AuthCompatV11Controller, AuthV11Controller, CurrenciesV11Controller, CategoriesV11Controller, TransactionsV11Controller],
+  controllers: [
+    AuthCompatV11Controller,
+    AuthV11Controller,
+    CurrenciesV11Controller,
+    CategoriesV11Controller,
+    TransactionsV11Controller,
+  ],
 })
 export class V11Module {}

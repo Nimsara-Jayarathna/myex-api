@@ -5,7 +5,9 @@ import { Category, type CategoryDocument } from './schemas/category.schema';
 
 @Injectable()
 export class CategoriesRepository {
-  constructor(@InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>) {}
+  constructor(
+    @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>,
+  ) {}
 
   find(filter: FilterQuery<CategoryDocument>) {
     return this.categoryModel.find(filter).sort({ type: 1, isDefault: -1, name: 1 });

@@ -19,7 +19,11 @@ export class AdminOtpChallenge {
   @Prop({ required: true })
   otpHash!: string;
 
-  @Prop({ enum: ['pending', 'verified', 'expired', 'locked', 'consumed', 'cancelled'], default: 'pending', index: true })
+  @Prop({
+    enum: ['pending', 'verified', 'expired', 'locked', 'consumed', 'cancelled'],
+    default: 'pending',
+    index: true,
+  })
   status!: 'pending' | 'verified' | 'expired' | 'locked' | 'consumed' | 'cancelled';
 
   @Prop({ default: 0, min: 0 })

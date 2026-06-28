@@ -5,7 +5,9 @@ import { Currency, type CurrencyDocument } from './schemas/currency.schema';
 
 @Injectable()
 export class CurrenciesRepository {
-  constructor(@InjectModel(Currency.name) private readonly currencyModel: Model<CurrencyDocument>) {}
+  constructor(
+    @InjectModel(Currency.name) private readonly currencyModel: Model<CurrencyDocument>,
+  ) {}
 
   find(filter: FilterQuery<CurrencyDocument> = {}) {
     return this.currencyModel.find(filter).sort({ isDefault: -1, code: 1 });

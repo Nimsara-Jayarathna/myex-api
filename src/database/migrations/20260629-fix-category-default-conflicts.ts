@@ -31,15 +31,20 @@ async function keepOnlyOneDefault(
   const keep = categories[0] ?? null;
   if (!keep) return null;
 
-  await connection.collection(CATEGORY_COLLECTION).updateMany(
-    { ...filter, isDefault: true, _id: { $ne: keep._id } },
-    { $set: { isDefault: false } },
-  );
+  await connection
+    .collection(CATEGORY_COLLECTION)
+    .updateMany(
+      { ...filter, isDefault: true, _id: { $ne: keep._id } },
+      { $set: { isDefault: false } },
+    );
 
   return keep;
 }
 
-async function ensureGlobalDefault(connection: Connection, type: CategoryType): Promise<CategoryRecord | null> {
+async function ensureGlobalDefault(
+  connection: Connection,
+  type: CategoryType,
+): Promise<CategoryRecord | null> {
   const existingDefault = await keepOnlyOneDefault(connection, { user: null, type });
   if (existingDefault) return existingDefault;
 

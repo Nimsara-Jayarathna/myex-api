@@ -17,10 +17,12 @@ export default {
       });
       defaultCurrency = { _id: result.insertedId };
     }
-    await connection.collection('users').updateMany(
-      { $or: [{ currency: { $exists: false } }, { currency: null }] },
-      { $set: { currency: defaultCurrency._id } },
-    );
+    await connection
+      .collection('users')
+      .updateMany(
+        { $or: [{ currency: { $exists: false } }, { currency: null }] },
+        { $set: { currency: defaultCurrency._id } },
+      );
   },
   async down(): Promise<void> {
     // Non-destructive rollback: keep assigned currency values.

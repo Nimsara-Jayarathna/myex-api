@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Model, Types } from 'mongoose';
 import { Category, type CategoryDocument } from './schemas/category.schema';
-import { AdminCategoryPolicy, type AdminCategoryPolicyDocument } from '../admin/categories/schemas/admin-category-policy.schema';
+import {
+  AdminCategoryPolicy,
+  type AdminCategoryPolicyDocument,
+} from '../admin/categories/schemas/admin-category-policy.schema';
 
 export interface CategoryRegistrationDefaults {
   incomeName: string;
@@ -55,7 +58,10 @@ export class CategoryDefaultsService {
     const normalized = name.trim();
     const existing = await this.categoryModel.findOne({ user: userId, type, name: normalized });
 
-    await this.categoryModel.updateMany({ user: userId, type, isDefault: true }, { isDefault: false });
+    await this.categoryModel.updateMany(
+      { user: userId, type, isDefault: true },
+      { isDefault: false },
+    );
 
     if (existing) {
       existing.isActive = true;

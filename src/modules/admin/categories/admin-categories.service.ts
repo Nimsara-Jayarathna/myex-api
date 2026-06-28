@@ -50,7 +50,8 @@ export class AdminCategoriesService {
     await category.save();
 
     if (category.isDefault) await this.syncPolicyDefault(category, updatedBy);
-    else if (wasDefault && !category.isDefault) await this.ensureReplacementDefault(category.type, updatedBy);
+    else if (wasDefault && !category.isDefault)
+      await this.ensureReplacementDefault(category.type, updatedBy);
     else await this.ensureSettings(updatedBy);
 
     return { category };
@@ -95,7 +96,10 @@ export class AdminCategoriesService {
     await this.repository.updateMany({ user: null, type, isDefault: true }, { isDefault: false });
   }
 
-  private async syncPolicyDefault(category: CategoryDocument, updatedBy?: string | null): Promise<void> {
+  private async syncPolicyDefault(
+    category: CategoryDocument,
+    updatedBy?: string | null,
+  ): Promise<void> {
     const settings = await this.repository.getPolicy();
 
     if (category.type === 'income') settings.defaultIncomeCategoryName = category.name;
@@ -105,7 +109,10 @@ export class AdminCategoriesService {
     await settings.save();
   }
 
-  private async ensureReplacementDefault(type: CategoryType, updatedBy?: string | null): Promise<void> {
+  private async ensureReplacementDefault(
+    type: CategoryType,
+    updatedBy?: string | null,
+  ): Promise<void> {
     const existingDefault = await this.repository.findOne({
       user: null,
       type,

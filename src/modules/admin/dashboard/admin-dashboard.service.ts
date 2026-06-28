@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import { User, type UserDocument } from '../../users/schemas/user.schema';
-import { Transaction, type TransactionDocument } from '../../transactions/schemas/transaction.schema';
+import {
+  Transaction,
+  type TransactionDocument,
+} from '../../transactions/schemas/transaction.schema';
 
 @Injectable()
 export class AdminDashboardService {

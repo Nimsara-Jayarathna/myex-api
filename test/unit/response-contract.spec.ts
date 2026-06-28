@@ -11,7 +11,9 @@ describe('response contract helpers', () => {
   });
 
   it('keeps v1.1 error response format compatible with main branch', () => {
-    expect(apiError(ERROR_CODES.VALIDATION_ERROR, 'Validation Error', { email: 'Email is required' })).toEqual({
+    expect(
+      apiError(ERROR_CODES.VALIDATION_ERROR, 'Validation Error', { email: 'Email is required' }),
+    ).toEqual({
       success: false,
       error: {
         code: ERROR_CODES.VALIDATION_ERROR,

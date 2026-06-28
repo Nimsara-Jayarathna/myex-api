@@ -7,6 +7,8 @@ describe('CurrenciesService', () => {
       { findById: jest.fn().mockResolvedValue(null) } as never,
       {} as never,
     );
-    await expect(service.updateUserCurrency({ _id: 'u1' } as never, 'c1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.updateUserCurrency({ _id: 'u1' } as never, 'c1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

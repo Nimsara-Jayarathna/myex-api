@@ -13,10 +13,10 @@ import { isAdminRoute, isV11Route } from '../utils/request-meta';
 const isExpressResponseLike = (value: unknown): boolean =>
   Boolean(
     value &&
-      typeof value === 'object' &&
-      'statusCode' in value &&
-      'setHeader' in value &&
-      'end' in value,
+    typeof value === 'object' &&
+    'statusCode' in value &&
+    'setHeader' in value &&
+    'end' in value,
   );
 
 @Injectable()
@@ -39,7 +39,11 @@ export class ResponseInterceptor implements NestInterceptor {
           return data;
         }
 
-        if (Buffer.isBuffer(data) || isExpressResponseLike(data) || isAlreadyFormattedResponse(data)) {
+        if (
+          Buffer.isBuffer(data) ||
+          isExpressResponseLike(data) ||
+          isAlreadyFormattedResponse(data)
+        ) {
           return data;
         }
 
@@ -57,10 +61,10 @@ export class ResponseInterceptor implements NestInterceptor {
   }
 
   private resolveMode(context: ExecutionContext, request: Request): ResponseModeValue {
-    const explicitMode = this.reflector.getAllAndOverride<ResponseModeValue>(RESPONSE_MODE_METADATA, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const explicitMode = this.reflector.getAllAndOverride<ResponseModeValue>(
+      RESPONSE_MODE_METADATA,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (explicitMode) return explicitMode;
 

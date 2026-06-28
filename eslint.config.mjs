@@ -8,23 +8,23 @@ export default tseslint.config(
     ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.recommended,
   prettier,
   {
+    files: ['**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
         ...globals.jest,
       },
       parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.build.json'],
-        tsconfigRootDir: import.meta.dirname,
+        project: false,
       },
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
 );

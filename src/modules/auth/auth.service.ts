@@ -142,7 +142,10 @@ export class AuthService {
 
   async registerComplete(dto: RegisterDto & { registrationToken?: string }) {
     if (!dto.registrationToken) throw new BadRequestException('registrationToken is required');
-    const verified = await this.authRepository.findToken(dto.registrationToken, 'registration_verified');
+    const verified = await this.authRepository.findToken(
+      dto.registrationToken,
+      'registration_verified',
+    );
     if (!verified || verified.email !== dto.email.toLowerCase().trim()) {
       throw new BadRequestException('Invalid or expired registration token');
     }
@@ -188,7 +191,10 @@ export class AuthService {
     return { user: this.sanitizeUser(fullUser) };
   }
 
-  async updateUserDetails(user: UserDocument, payload: { name?: string; fname?: string; lname?: string }) {
+  async updateUserDetails(
+    user: UserDocument,
+    payload: { name?: string; fname?: string; lname?: string },
+  ) {
     const updated = await this.usersRepository.updateById(String(user._id), payload);
     return { user: updated ? this.sanitizeUser(updated as UserDocument) : null };
   }

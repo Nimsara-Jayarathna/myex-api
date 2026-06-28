@@ -11,7 +11,13 @@ import { AdminDashboardService } from '../../../../modules/admin/dashboard/admin
 
 @ResponseMode('admin')
 @Controller('internal/admin/dashboard')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminDashboardController {
   constructor(private readonly dashboardService: AdminDashboardService) {}

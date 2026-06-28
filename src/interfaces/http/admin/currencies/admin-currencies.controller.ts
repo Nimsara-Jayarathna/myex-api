@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ResponseMode } from '../../../../common/decorators/response-mode.decorator';
 import { ResponseMessage } from '../../../../common/decorators/response-message.decorator';
 import { AdminJwtGuard } from '../../../../common/guards/admin-jwt.guard';
@@ -8,11 +17,20 @@ import { AdminIpAllowlistGuard } from '../../../../common/guards/admin-ip-allowl
 import { AdminRateLimiter } from '../../../../common/guards/admin-rate-limiter.guard';
 import { AdminAuditLogInterceptor } from '../../../../common/interceptors/admin-audit-log.interceptor';
 import { AdminCurrenciesService } from '../../../../modules/admin/currencies/admin-currencies.service';
-import { AdminCurrencyDto, UpdateAdminCurrencyDto } from '../../../../modules/admin/currencies/dto/admin-currency.dto';
+import {
+  AdminCurrencyDto,
+  UpdateAdminCurrencyDto,
+} from '../../../../modules/admin/currencies/dto/admin-currency.dto';
 
 @ResponseMode('admin')
 @Controller('internal/admin/currencies')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminCurrenciesController {
   constructor(private readonly adminCurrenciesService: AdminCurrenciesService) {}

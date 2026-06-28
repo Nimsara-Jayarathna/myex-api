@@ -8,7 +8,12 @@ export class AdminUsersRepository {
   constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
 
   list(filter: FilterQuery<UserDocument>, skip: number, limit: number) {
-    return this.userModel.find(filter).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit);
+    return this.userModel
+      .find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
   }
 
   count(filter: FilterQuery<UserDocument>) {

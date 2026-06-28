@@ -11,7 +11,13 @@ import { AdminAuditService } from '../../../../modules/admin/audit/admin-audit.s
 
 @ResponseMode('admin')
 @Controller('internal/admin/audit')
-@UseGuards(AdminIpAllowlistGuard, AdminRateLimiter, AdminJwtGuard, AdminRoleGuard, AdminPermissionGuard)
+@UseGuards(
+  AdminIpAllowlistGuard,
+  AdminRateLimiter,
+  AdminJwtGuard,
+  AdminRoleGuard,
+  AdminPermissionGuard,
+)
 @UseInterceptors(AdminAuditLogInterceptor)
 export class InternalAdminAuditController {
   constructor(private readonly auditService: AdminAuditService) {}

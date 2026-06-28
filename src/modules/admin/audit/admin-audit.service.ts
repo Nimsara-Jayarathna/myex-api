@@ -14,7 +14,9 @@ export interface AdminAuditRecord {
 
 @Injectable()
 export class AdminAuditService {
-  constructor(@InjectModel(AdminAuditLog.name) private readonly auditModel: Model<AdminAuditLogDocument>) {}
+  constructor(
+    @InjectModel(AdminAuditLog.name) private readonly auditModel: Model<AdminAuditLogDocument>,
+  ) {}
 
   async record(payload: AdminAuditRecord): Promise<void> {
     await this.auditModel.create(payload);

@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import type { Model } from 'mongoose';
-import { AdminUser, type AdminUserDocument } from '../../modules/admin/auth/schemas/admin-user.schema';
+import {
+  AdminUser,
+  type AdminUserDocument,
+} from '../../modules/admin/auth/schemas/admin-user.schema';
 
 interface AdminPayload {
   adminId: string;
@@ -19,7 +22,10 @@ export class AdminJwtGuard implements CanActivate {
     const token = this.extractToken(request);
     if (!token) throw new UnauthorizedException('Admin access token missing');
 
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET ?? 'local-access-secret') as AdminPayload;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_ACCESS_SECRET ?? 'local-access-secret',
+    ) as AdminPayload;
     if (decoded.type !== 'admin') throw new UnauthorizedException('Invalid admin token');
 
     const admin = await this.adminModel.findById(decoded.adminId);

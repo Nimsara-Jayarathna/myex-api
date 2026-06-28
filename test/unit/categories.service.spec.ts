@@ -4,9 +4,9 @@ import { CategoriesService } from '../../src/modules/categories/categories.servi
 describe('CategoriesService', () => {
   it('validates category type', async () => {
     const service = new CategoriesService({ find: jest.fn() } as never);
-    await expect(service.listActiveCategories({ _id: 'u1' } as never, 'wrong' as never)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.listActiveCategories({ _id: 'u1' } as never, 'wrong' as never),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('returns only one effective default per category type without changing response shape', async () => {
@@ -59,12 +59,18 @@ describe('CategoriesService', () => {
     const service = new CategoriesService(repository as never);
     const result = await service.listActiveCategories({ _id: 'u1' } as never);
 
-    const expenseDefaults = result.categories.filter((category) => category.type === 'expense' && category.isDefault);
-    const incomeDefaults = result.categories.filter((category) => category.type === 'income' && category.isDefault);
+    const expenseDefaults = result.categories.filter(
+      (category) => category.type === 'expense' && category.isDefault,
+    );
+    const incomeDefaults = result.categories.filter(
+      (category) => category.type === 'income' && category.isDefault,
+    );
 
     expect(expenseDefaults).toHaveLength(1);
     expect(incomeDefaults).toHaveLength(1);
-    expect(result.categories.some((category) => category.id === 'global-expense-default')).toBe(false);
+    expect(result.categories.some((category) => category.id === 'global-expense-default')).toBe(
+      false,
+    );
     expect(result.categories[0]).toHaveProperty('id');
     expect(result.categories[0]).toHaveProperty('name');
     expect(result.categories[0]).toHaveProperty('type');

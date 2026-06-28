@@ -15,7 +15,9 @@ export class MongooseExceptionFilter implements ExceptionFilter {
     if (response.headersSent) return;
 
     const path = request.originalUrl || request.url || '';
-    const keyPattern = (exception as mongoose.mongo.MongoServerError & { keyPattern?: Record<string, unknown> }).keyPattern ?? {};
+    const keyPattern =
+      (exception as mongoose.mongo.MongoServerError & { keyPattern?: Record<string, unknown> })
+        .keyPattern ?? {};
     const duplicateEmail = exception.code === 11000 && 'email' in keyPattern;
     const statusCode = exception.code === 11000 ? 400 : 500;
     const code = duplicateEmail
