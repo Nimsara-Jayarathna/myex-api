@@ -160,3 +160,25 @@ For release validation before deployment:
 ```powershell
 npm run release
 ```
+
+## Category default consistency
+
+The category API keeps the same request and response shape as the original Express API. The backend now enforces the business rule that one user can have only one active default income category and one active default expense category.
+
+What changed internally:
+
+- Public category responses still return `{ categories: [...] }`.
+- Global/admin categories and user categories are de-duplicated by `type + name` for user-facing category lists.
+- If a user has a category with the same name/type as a global category, the user category is returned and the global duplicate is hidden.
+- Only one effective `isDefault: true` category is returned per type.
+- Login/register default-category ensuring no longer overwrites existing user defaults.
+- Admin default category updates now update the global policy used for new users and fallback defaults.
+- MongoDB partial unique indexes protect against future duplicate active defaults.
+
+Run this once after deploying this fix to clean existing duplicate default data and create the indexes:
+
+```bash
+npm run migration:up
+```
+
+`MONGO_AUTO_INDEX` defaults to `false`, so indexes should be managed by migrations instead of being created automatically during app startup.

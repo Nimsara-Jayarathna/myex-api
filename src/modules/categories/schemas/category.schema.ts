@@ -27,4 +27,31 @@ export class Category {
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
+
 CategorySchema.index({ user: 1, type: 1, name: 1 }, { unique: true });
+
+CategorySchema.index(
+  { user: 1, type: 1 },
+  {
+    unique: true,
+    name: 'uniq_user_active_default_category_per_type',
+    partialFilterExpression: {
+      isDefault: true,
+      isActive: true,
+      user: { $type: 'objectId' },
+    },
+  },
+);
+
+CategorySchema.index(
+  { type: 1 },
+  {
+    unique: true,
+    name: 'uniq_global_active_default_category_per_type',
+    partialFilterExpression: {
+      user: null,
+      isDefault: true,
+      isActive: true,
+    },
+  },
+);

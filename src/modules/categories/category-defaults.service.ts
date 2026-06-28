@@ -10,6 +10,8 @@ export interface CategoryRegistrationDefaults {
   categoryLimit: number;
 }
 
+type CategoryType = 'income' | 'expense';
+
 @Injectable()
 export class CategoryDefaultsService {
   constructor(
@@ -32,14 +34,42 @@ export class CategoryDefaultsService {
     incomeName: string,
     expenseName: string,
   ): Promise<void> {
-    await this.ensure(userId, incomeName, 'income');
-    await this.ensure(userId, expenseName, 'expense');
+    await this.ensureMissingUserDefault(userId, incomeName, 'income');
+    await this.ensureMissingUserDefault(userId, expenseName, 'expense');
   }
 
-  private async ensure(userId: Types.ObjectId, name: string, type: 'income' | 'expense') {
+  private async ensureMissingUserDefault(
+    userId: Types.ObjectId,
+    name: string,
+    type: CategoryType,
+  ): Promise<void> {
+    const activeDefault = await this.categoryModel.findOne({
+      user: userId,
+      type,
+      isActive: true,
+      isDefault: true,
+    });
+
+    if (activeDefault) return;
+
     const normalized = name.trim();
     const existing = await this.categoryModel.findOne({ user: userId, type, name: normalized });
-    if (existing) return;
-    await this.categoryModel.create({ user: userId, name: normalized, type, isDefault: true });
+
+    await this.categoryModel.updateMany({ user: userId, type, isDefault: true }, { isDefault: false });
+
+    if (existing) {
+      existing.isActive = true;
+      existing.isDefault = true;
+      await existing.save();
+      return;
+    }
+
+    await this.categoryModel.create({
+      user: userId,
+      name: normalized,
+      type,
+      isDefault: true,
+      isActive: true,
+    });
   }
 }

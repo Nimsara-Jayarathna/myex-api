@@ -55,7 +55,7 @@ export class InternalAdminCategoriesController {
 
   @Delete(':id')
   @ResponseMessage('Category deleted.')
-  deleteCategory(@Param('id') id: string) {
-    return this.adminCategoriesService.deleteCategory(id);
+  deleteCategory(@Param('id') id: string, @CurrentAdmin() admin: AdminUserDocument) {
+    return this.adminCategoriesService.deleteCategory(id, admin.email);
   }
 }

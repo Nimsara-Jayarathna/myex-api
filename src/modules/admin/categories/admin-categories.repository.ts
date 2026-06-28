@@ -19,6 +19,10 @@ export class AdminCategoriesRepository {
     return this.categoryModel.findById(id);
   }
 
+  findOne(filter: FilterQuery<CategoryDocument>) {
+    return this.categoryModel.findOne(filter);
+  }
+
   create(payload: Partial<Category>) {
     return this.categoryModel.create(payload);
   }
