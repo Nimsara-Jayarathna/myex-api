@@ -7,7 +7,7 @@ export type AdminAuditLogDocument = HydratedDocument<AdminAuditLog>;
 export class AdminAuditLog {
   _id!: Types.ObjectId;
 
-  @Prop({ default: null, index: true })
+  @Prop({ type: String, default: null, index: true })
   adminEmail?: string | null;
 
   @Prop({ required: true })
@@ -22,7 +22,7 @@ export class AdminAuditLog {
   @Prop({ default: 0 })
   durationMs!: number;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   errorMessage?: string | null;
 
   createdAt!: Date;

@@ -1,6 +1,23 @@
 import crypto from 'node:crypto';
 import type { Request } from 'express';
 
+const LOG_LEVELS = {
+  debug: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+} as const;
+
+type LogLevel = keyof typeof LOG_LEVELS;
+
+const configuredLogLevel = (): LogLevel => {
+  const raw = process.env.LOG_LEVEL?.toLowerCase();
+  return raw && raw in LOG_LEVELS ? (raw as LogLevel) : 'info';
+};
+
+const shouldLog = (level: LogLevel): boolean =>
+  LOG_LEVELS[level] >= LOG_LEVELS[configuredLogLevel()];
+
 const safeString = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
@@ -96,7 +113,34 @@ export const getDeviceInfo = (req: Request) => {
   };
 };
 
-const writeLog = (level: 'info' | 'warn' | 'error', payload: unknown): void => {
+const SENSITIVE_KEYS = new Set([
+  'password',
+  'currentPassword',
+  'newPassword',
+  'confirmPassword',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'authorization',
+  'cookie',
+  'otp',
+]);
+
+export const redactSensitive = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map((item) => redactSensitive(item));
+  if (!value || typeof value !== 'object') return value;
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, nestedValue]) => [
+      key,
+      SENSITIVE_KEYS.has(key) ? '[REDACTED]' : redactSensitive(nestedValue),
+    ]),
+  );
+};
+
+const writeLog = (level: LogLevel, payload: unknown): void => {
+  if (!shouldLog(level)) return;
+
   const entry = {
     timestamp: new Date().toISOString(),
     logLevel: level,
@@ -106,6 +150,7 @@ const writeLog = (level: 'info' | 'warn' | 'error', payload: unknown): void => {
 };
 
 export const logger = {
+  debug: (payload: unknown) => writeLog('debug', payload),
   info: (payload: unknown) => writeLog('info', payload),
   warn: (payload: unknown) => writeLog('warn', payload),
   error: (payload: unknown) => writeLog('error', payload),
