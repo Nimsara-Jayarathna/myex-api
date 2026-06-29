@@ -102,6 +102,7 @@ export class CategoriesService {
   }
 
   async setDefaultCategory(user: UserDocument, id: string, _body?: UpdateCategoryDto) {
+    void _body;
     const category = await this.categoriesRepository.findById(id);
     if (!category || String(category.user) !== String(user._id)) {
       throw new NotFoundException('Category not found');

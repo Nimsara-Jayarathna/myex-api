@@ -1,6 +1,6 @@
 {
   "name": "blipzo-api",
-  "version": "2.0.0",
+  "version": "1.1.0",
   "description": "Blipzo API migrated to a NestJS modular monolith with public versioned APIs and internal admin APIs.",
   "private": true,
   "license": "ISC",
@@ -22,7 +22,9 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.mjs\"",
-    "test": "jest --runInBand",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "test": "jest --runInBand --watchman=false",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
@@ -33,6 +35,10 @@
     "seed:admin": "tsx src/database/seeders/seed-admin-user.ts",
     "seed:currencies": "tsx src/database/seeders/seed-currencies.ts",
     "seed:categories": "tsx src/database/seeders/seed-default-categories.ts"
+  },
+  "engines": {
+    "node": "24.18.0",
+    "npm": ">=11 <12"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -48,12 +54,9 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
-    "node-cron": "^4.2.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sib-api-v3-sdk": "^8.5.0"
@@ -95,5 +98,13 @@
     "*.{ts,js}": [
       "eslint --fix"
     ]
+  },
+  "allowScripts": {
+    "@scarf/scarf@1.4.0": false,
+    "bcrypt@6.0.0": true,
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true,
+    "mongodb-memory-server@10.4.3": true,
+    "unrs-resolver@1.12.2": true
   }
 }

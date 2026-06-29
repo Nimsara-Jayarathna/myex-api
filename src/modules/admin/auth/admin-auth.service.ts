@@ -5,6 +5,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { AdminAuthRepository } from './admin-auth.repository';
 import { EmailService } from '../../email/email.service';
 import type { AdminOtpChallengeDocument } from './schemas/admin-otp-challenge.schema';
+import type { AdminUserDocument } from './schemas/admin-user.schema';
 
 export interface AdminOtpChallengeStatus {
   challengeId: string;
@@ -141,7 +142,7 @@ export class AdminAuthService {
     return this.toOtpChallengeStatus(challenge);
   }
 
-  sanitizeAdmin(admin: { [key: string]: any }) {
+  sanitizeAdmin(admin: AdminUserDocument) {
     return {
       id: admin._id,
       email: admin.email,

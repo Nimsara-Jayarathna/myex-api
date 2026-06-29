@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Types } from 'mongoose';
 import { AuthRepository } from './auth.repository';
 import { UsersRepository } from '../users/users.repository';
 import { CurrenciesRepository } from '../currencies/currencies.repository';
@@ -17,6 +18,23 @@ import { issueTokens, verifyAccessToken, verifyRefreshToken } from '../../common
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import type { UserDocument } from '../users/schemas/user.schema';
+
+type PopulatedCurrency = {
+  _id: Types.ObjectId;
+  name: string;
+  code: string;
+  symbol: string;
+};
+
+type UserWithMaybePopulatedCurrency = UserDocument & {
+  currency?: Types.ObjectId | PopulatedCurrency;
+};
+
+function isPopulatedCurrency(
+  currency: Types.ObjectId | PopulatedCurrency,
+): currency is PopulatedCurrency {
+  return 'name' in currency && 'code' in currency && 'symbol' in currency;
+}
 
 @Injectable()
 export class AuthService {
@@ -199,7 +217,8 @@ export class AuthService {
     return { user: updated ? this.sanitizeUser(updated as UserDocument) : null };
   }
 
-  sanitizeUser(user: UserDocument | any) {
+  sanitizeUser(user: UserWithMaybePopulatedCurrency) {
+    const currency = user.currency;
     return {
       id: user._id,
       name: user.name || `${user.fname ?? ''} ${user.lname ?? ''}`.trim(),
@@ -211,12 +230,12 @@ export class AuthService {
       categoryLimit: user.categoryLimit ?? 10,
       defaultIncomeCategories: user.defaultIncomeCategories,
       defaultExpenseCategories: user.defaultExpenseCategories,
-      currency: user.currency
+      currency: currency
         ? {
-            id: user.currency._id ?? user.currency,
-            name: user.currency.name,
-            code: user.currency.code,
-            symbol: user.currency.symbol,
+            id: currency._id,
+            name: isPopulatedCurrency(currency) ? currency.name : undefined,
+            code: isPopulatedCurrency(currency) ? currency.code : undefined,
+            symbol: isPopulatedCurrency(currency) ? currency.symbol : undefined,
           }
         : null,
     };

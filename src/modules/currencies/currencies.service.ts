@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from '../users/users.repository';
 import { CurrenciesRepository } from './currencies.repository';
 import type { UserDocument } from '../users/schemas/user.schema';
+import type { CurrencyDocument } from './schemas/currency.schema';
 
 @Injectable()
 export class CurrenciesService {
@@ -10,7 +11,7 @@ export class CurrenciesService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  buildCurrencyResponse(currency: { [key: string]: any }) {
+  buildCurrencyResponse(currency: CurrencyDocument) {
     return {
       id: currency._id,
       name: currency.name,

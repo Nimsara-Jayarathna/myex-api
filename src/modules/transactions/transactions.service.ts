@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import mongoose, { type FilterQuery, type Types } from 'mongoose';
 import type { UserDocument } from '../users/schemas/user.schema';
-import { Category, type CategoryDocument } from '../categories/schemas/category.schema';
+import type { CategoryDocument } from '../categories/schemas/category.schema';
 import { CategoriesRepository } from '../categories/categories.repository';
 import { TransactionsRepository } from './transactions.repository';
 import type { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -10,7 +10,22 @@ import type { UpdateTransactionDto } from './dto/update-transaction.dto';
 import type { TransactionDocument } from './schemas/transaction.schema';
 
 const ALLOWED_TYPES = ['income', 'expense'] as const;
-const ALLOWED_STATUS = ['active', 'undone'] as const;
+
+type TransactionResponseSource = {
+  _id: Types.ObjectId;
+  user: Types.ObjectId;
+  title?: string;
+  description?: string;
+  type: 'income' | 'expense';
+  category: string;
+  categoryId?: Types.ObjectId;
+  amount: number;
+  date: Date;
+  status: 'active' | 'undone';
+  isCustomDate: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const normalizeCategoryName = (name?: string): string => (name ?? '').trim();
 const normalizeToUtcMidnight = (value: string | Date): Date => {
@@ -228,7 +243,7 @@ export class TransactionsService {
     return category;
   }
 
-  private buildTransactionResponse(transaction: { [key: string]: any }) {
+  private buildTransactionResponse(transaction: TransactionDocument | TransactionResponseSource) {
     return {
       id: transaction._id,
       _id: transaction._id,
