@@ -66,8 +66,7 @@ export class InternalAdminUsersController {
 
   @Get(':id/activity')
   @ResponseMessage('User activity loaded.')
-  async userActivity(@Param('id') id: string) {
-    const activity = await this.adminUsersService.getUserActivity(id);
-    return { activity };
+  userActivity(@Param('id') id: string) {
+    return this.adminUsersService.getUserActivity(id);
   }
 }

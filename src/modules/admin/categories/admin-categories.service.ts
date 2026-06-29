@@ -13,26 +13,42 @@ export class AdminCategoriesService {
     const filter: Record<string, unknown> = { user: null };
     if (query.type) filter.type = query.type;
     if (typeof query.isActive === 'boolean') filter.isActive = query.isActive;
-    const categories = await this.repository.find(filter);
-    const settings = await this.repository.getPolicy();
-    return { categories, settings };
+    const [categories, settings] = await Promise.all([
+      this.repository.find(filter),
+      this.repository.getPolicy(),
+    ]);
+    const mappedCategories = categories.map((category) => this.toAdminCategory(category));
+    return {
+      defaults: {
+        income:
+          mappedCategories.find((category) => category.type === 'income' && category.isDefault) ??
+          null,
+        expense:
+          mappedCategories.find((category) => category.type === 'expense' && category.isDefault) ??
+          null,
+      },
+      settings: { defaultCategoryLimit: settings.defaultCategoryLimit ?? 10 },
+      categories: mappedCategories,
+      total: mappedCategories.length,
+    };
   }
 
   async createCategory(dto: AdminCategoryDto, updatedBy?: string | null) {
-    if (dto.isDefault) await this.clearGlobalDefaults(dto.type);
+    const shouldSetDefault = Boolean(dto.isDefault ?? dto.setAsDefault);
+    if (shouldSetDefault) await this.clearGlobalDefaults(dto.type);
 
     const category = await this.repository.create({
       user: null,
       name: dto.name.trim(),
       type: dto.type,
-      isDefault: Boolean(dto.isDefault),
+      isDefault: shouldSetDefault,
       isActive: true,
     });
 
     if (category.isDefault) await this.syncPolicyDefault(category, updatedBy);
     else await this.ensureSettings(updatedBy);
 
-    return { category };
+    return this.toAdminCategory(category);
   }
 
   async updateCategory(id: string, dto: UpdateAdminCategoryDto, updatedBy?: string | null) {
@@ -40,11 +56,18 @@ export class AdminCategoriesService {
     if (!category) throw new NotFoundException('Category not found');
 
     const wasDefault = category.isDefault;
+    const shouldSetDefault = Boolean(dto.isDefault ?? dto.setAsDefault);
 
     if (dto.name !== undefined) category.name = dto.name.trim();
+    if (dto.type !== undefined) category.type = dto.type;
     if (dto.isActive !== undefined) {
       category.isActive = dto.isActive;
       if (!dto.isActive) category.isDefault = false;
+    }
+    if (shouldSetDefault) {
+      await this.clearGlobalDefaults(category.type);
+      category.isDefault = true;
+      category.isActive = true;
     }
 
     await category.save();
@@ -54,7 +77,7 @@ export class AdminCategoriesService {
       await this.ensureReplacementDefault(category.type, updatedBy);
     else await this.ensureSettings(updatedBy);
 
-    return { category };
+    return this.toAdminCategory(category);
   }
 
   async setDefaultCategory(id: string, updatedBy?: string | null) {
@@ -67,7 +90,7 @@ export class AdminCategoriesService {
     await category.save();
     await this.syncPolicyDefault(category, updatedBy);
 
-    return { category };
+    return this.toAdminCategory(category);
   }
 
   async deleteCategory(id: string, updatedBy?: string | null) {
@@ -81,7 +104,7 @@ export class AdminCategoriesService {
 
     if (wasDefault) await this.ensureReplacementDefault(category.type, updatedBy);
 
-    return { category };
+    return { id, deleted: true };
   }
 
   async updateCategoryLimit(defaultCategoryLimit: number, updatedBy?: string | null) {
@@ -89,7 +112,7 @@ export class AdminCategoriesService {
     settings.defaultCategoryLimit = defaultCategoryLimit;
     settings.updatedBy = updatedBy ?? null;
     await settings.save();
-    return { settings };
+    return { defaultCategoryLimit: settings.defaultCategoryLimit };
   }
 
   private async clearGlobalDefaults(type: CategoryType): Promise<void> {
@@ -142,5 +165,22 @@ export class AdminCategoriesService {
     settings.updatedBy = updatedBy ?? settings.updatedBy;
     await settings.save();
     return settings;
+  }
+
+  private toAdminCategory(category: CategoryDocument) {
+    return {
+      id: String(category._id),
+      name: category.name,
+      type: category.type,
+      isDefault: category.isDefault,
+      isActive: category.isActive,
+      status: category.isDefault ? 'DEFAULT' : 'STANDARD',
+      createdAt: this.toIso(category.createdAt),
+      updatedAt: this.toIso(category.updatedAt),
+    };
+  }
+
+  private toIso(value: Date | string): string {
+    return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
   }
 }

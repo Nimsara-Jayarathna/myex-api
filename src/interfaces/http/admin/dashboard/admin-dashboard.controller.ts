@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ResponseMode } from '../../../../common/decorators/response-mode.decorator';
 import { ResponseMessage } from '../../../../common/decorators/response-message.decorator';
 import { AdminJwtGuard } from '../../../../common/guards/admin-jwt.guard';
@@ -24,7 +24,10 @@ export class InternalAdminDashboardController {
 
   @Get()
   @ResponseMessage('Dashboard snapshot loaded.')
-  dashboard() {
-    return this.dashboardService.getDashboard();
+  dashboard(
+    @Query('period') period?: '30d' | '90d',
+    @Query('eventsLimit') eventsLimit?: number,
+  ): Promise<unknown> {
+    return this.dashboardService.getDashboard({ period, eventsLimit });
   }
 }

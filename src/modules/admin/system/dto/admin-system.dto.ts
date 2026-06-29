@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsMongoId, IsOptional, IsString } from 'class-validator';
 
 export class RunBackupDto {
   @IsOptional()
@@ -24,7 +24,12 @@ export class CreateDeleteRequestDto {
 
 export class DecideDeleteRequestDto {
   @IsString()
-  decision!: 'approved' | 'denied';
+  @IsIn(['approve', 'deny', 'approved', 'denied'])
+  decision!: 'approve' | 'deny' | 'approved' | 'denied';
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 
   @IsOptional()
   @IsString()

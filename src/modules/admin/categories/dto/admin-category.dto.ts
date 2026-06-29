@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AdminCategoryDto {
@@ -11,6 +11,10 @@ export class AdminCategoryDto {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  setAsDefault?: boolean;
 }
 
 export class UpdateAdminCategoryDto {
@@ -19,13 +23,26 @@ export class UpdateAdminCategoryDto {
   name?: string;
 
   @IsOptional()
+  @IsIn(['income', 'expense'])
+  type?: 'income' | 'expense';
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  setAsDefault?: boolean;
 }
 
 export class UpdateCategorySettingsDto {
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
+  @Max(1000)
   defaultCategoryLimit!: number;
 }
